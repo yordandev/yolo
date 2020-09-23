@@ -1,0 +1,17 @@
+{
+  "name": "yolo-backend",
+  "version": "1.0.0",
+  "description": "Backend of the group project for the Client-server communication course",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "zian18aw and atyo18ux",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "md5": "^2.3.0",
+    "nodemon": "^2.0.4",
+    "sqlite3": "^5.0.0"
+  }
+}

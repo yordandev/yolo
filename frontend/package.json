@@ -1,0 +1,11 @@
+{
+  "name": "yolo-frontend",
+  "version": "1.0.0",
+  "description": "Frontend of the group project for the Client-server communication course",
+  "scripts": {
+    "start": ""
+  },
+  "author": "zian18aw and atyo18ux",
+  "license": "ISC",
+  "dependencies": {}
+}
