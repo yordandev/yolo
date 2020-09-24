@@ -26,10 +26,9 @@ app.get("/", (req, res, next) => {
   res.json({ message: "uhhh, what is it you want me to do exactly?" });
 });
 
-const generateAccessToken = (data) => {
+const generateAccessToken = (username) =>
   // expires after an hour
-  jwt.sign(data, JWT_SECRET, { expiresIn: "3600s" });
-};
+  jwt.sign(username, JWT_SECRET, { expiresIn: "3600s" });
 
 const authenticateToken = (req, res, next) => {
   // Gather the jwt access token from the request header
@@ -38,8 +37,8 @@ const authenticateToken = (req, res, next) => {
   if (token == null) return res.sendStatus(401); // if there isn't any token
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    console.log(err);
     if (err) return res.sendStatus(403);
+    console.log(user);
     req.user = user;
     next(); // pass the execution off to whatever request the client intended
   });
@@ -56,7 +55,6 @@ app.get("/posts", authenticateToken, (req, res, next) => {
     res.json({
       message: "Success",
       data: rows,
-      user: req.user,
     });
   });
 });
@@ -72,6 +70,7 @@ app.get("/posts", authenticateToken, (req, res, next) => {
     res.json({
       message: "Success",
       data: rows,
+      user: req.user,
     });
   });
 });
@@ -171,8 +170,8 @@ app.post("/signup/", (req, res, next) => {
     delete data.password;
     data.id = this.lastID;
     const token = generateAccessToken({
-      id: this.lastID,
       username: req.body.username,
+      email: req.body.email,
     });
     res.json({
       message: "Success",
@@ -206,12 +205,11 @@ app.post("/login/", (req, res, next) => {
       res.status(400).json({ error: "Invalid username or password!" });
       return;
     }
-    const token = generateAccessToken({
-      id: this.lastID,
-      username: req.body.username,
-    });
-    console.log(token);
     delete row.password;
+    const token = generateAccessToken({
+      username: req.body.username,
+      email: row.email,
+    });
     res.json({
       message: "Success",
       data: row,
