@@ -26,6 +26,7 @@ app.get("/", (req, res, next) => {
   res.json({ message: "uhhh, what is it you want me to do exactly?" });
 });
 
+//USER/AUTHENTICATION ENDPOINTS
 const generateAccessToken = (username) =>
   // expires after an hour
   jwt.sign(username, JWT_SECRET, { expiresIn: "3600s" });
@@ -38,107 +39,19 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.sendStatus(403);
-    console.log(user);
-    req.user = user;
-    next(); // pass the execution off to whatever request the client intended
+    const sql = "select * from user where username = ?";
+    const params = [user.username];
+    db.get(sql, params, (err, row) => {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      delete row.password;
+      req.user = row;
+      next(); // pass the execution off to whatever request the client intended
+    });
   });
 };
-
-app.get("/posts", authenticateToken, (req, res, next) => {
-  const sql = "select * from post";
-  const params = [];
-  db.all(sql, params, (err, rows) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: rows,
-    });
-  });
-});
-
-app.get("/posts", authenticateToken, (req, res, next) => {
-  const sql = "select * from post";
-  const params = [];
-  db.all(sql, params, (err, rows) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: rows,
-      user: req.user,
-    });
-  });
-});
-
-app.get("/post/:id", authenticateToken, (req, res, next) => {
-  var sql = "select * from post where id = ?";
-  var params = [req.params.id];
-  db.get(sql, params, (err, row) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: row,
-    });
-  });
-});
-
-app.delete("/post/:id", authenticateToken, (req, res, next) => {
-  const sql = `DELETE FROM post WHERE id = ?`;
-  db.run(sql, req.params.id, function (err, result) {
-    if (err) {
-      res.status(400).json({ error: res.message });
-      return;
-    }
-    res.json({ message: "deleted", changes: this.changes });
-  });
-});
-
-app.get("/user/:id", authenticateToken, (req, res, next) => {
-  var sql = "select * from user where id = ?";
-  var params = [req.params.id];
-  db.get(sql, params, (err, row) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: row,
-    });
-  });
-});
-
-app.patch("/post/:id", authenticateToken, (req, res, next) => {
-  const data = {
-    message: req.body.message,
-    life_points: req.body.life_points,
-  };
-  const params = [data.username, data.email, data.password, req.params.id];
-  const sql = `UPDATE post set 
-  message = COALESCE(?,message), 
-  life_points = COALESCE(?,life_points)
-  WHERE id = ?`;
-  db.run(sql, params, function (err, result) {
-    if (err) {
-      res.status(400).json({ error: res.message });
-      return;
-    }
-    delete data.password;
-    res.json({
-      message: "Success",
-      data: data,
-      changes: this.changes,
-    });
-  });
-});
 
 app.post("/signup/", (req, res, next) => {
   let errors = [];
@@ -218,6 +131,31 @@ app.post("/login/", (req, res, next) => {
   });
 });
 
+app.get("/user/:id", authenticateToken, (req, res, next) => {
+  const userSql = "select * from user where id = ?";
+  const userPostsSql = "select * from post where authorId = ?";
+  const params = [req.params.id];
+  let posts = [];
+  db.all(userPostsSql, params, (err, rows) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    posts = rows;
+  });
+  db.get(userSql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "Success",
+      data: row,
+      posts: posts,
+    });
+  });
+});
+
 app.patch("/user/:id", (req, res, next) => {
   const data = {
     username: req.body.username,
@@ -246,6 +184,72 @@ app.patch("/user/:id", (req, res, next) => {
 
 app.delete("/user/:id", (req, res, next) => {
   const sql = `DELETE FROM user WHERE id = ?`;
+  db.run(sql, req.params.id, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: res.message });
+      return;
+    }
+    res.json({ message: "deleted", changes: this.changes });
+  });
+});
+
+//POST ENDPOINTS
+app.get("/posts", authenticateToken, (req, res, next) => {
+  const sql = "select * from post";
+  const params = [];
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "Success",
+      data: rows,
+    });
+  });
+});
+
+app.get("/post/:id", authenticateToken, (req, res, next) => {
+  const sql = "select * from post where id = ?";
+  const params = [req.params.id];
+  db.get(sql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "Success",
+      data: row,
+    });
+  });
+});
+
+app.patch("/post/:id", authenticateToken, (req, res, next) => {
+  const data = {
+    message: req.body.message,
+    life_points: req.body.life_points,
+  };
+  const params = [data.username, data.email, data.password, req.params.id];
+  const sql = `UPDATE post set 
+  message = COALESCE(?,message), 
+  life_points = COALESCE(?,life_points)
+  WHERE id = ?`;
+  db.run(sql, params, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: res.message });
+      return;
+    }
+    delete data.password;
+    res.json({
+      message: "Success",
+      data: data,
+      changes: this.changes,
+    });
+  });
+});
+
+app.delete("/post/:id", authenticateToken, (req, res, next) => {
+  const sql = `DELETE FROM post WHERE id = ?`;
   db.run(sql, req.params.id, function (err, result) {
     if (err) {
       res.status(400).json({ error: res.message });
