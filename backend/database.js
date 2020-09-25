@@ -24,11 +24,19 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
     const postTableQuery = `CREATE TABLE IF NOT EXISTS post (
             id integer PRIMARY KEY AUTOINCREMENT,
             message text NOT NULL, 
-            life_points integer NOT NULL DEFAULT "0",
+            points integer NOT NULL DEFAULT "0",
             date_created datetime DEFAULT current_timestamp,
             authorId integer NOT NULL,
             FOREIGN KEY(authorId) REFERENCES user(id)
         )`;
+    const voteTableQuery = `CREATE TABLE IF NOT EXISTS vote (
+          id integer PRIMARY KEY AUTOINCREMENT,
+          type text NOT NULL, 
+          postId integer NOT NULL,
+          voterId integer NOT NULL,
+          FOREIGN KEY(postId) REFERENCES post(id),
+          FOREIGN KEY(voterId) REFERENCES user(id)
+      )`;
     db.run(userTableQuery, (err) => {
       if (err) {
         // console.log(err);
@@ -36,8 +44,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         // Table just created, creating some rows
         const insert =
           "INSERT INTO user (username, email, password) VALUES (?,?,?)";
-        // db.run(insert, ["yordan", "atyo18ux@student.ju.se", md5("test123")]);
-        // db.run(insert, ["antonia", "zian18aw@example.com", md5("test123")]);
+        db.run(insert, ["yordan", "atyo18ux@student.ju.se", md5("test123")]);
+        db.run(insert, ["antonia", "zian18aw@example.com", md5("test123")]);
       }
     });
     db.run(postTableQuery, (err) => {
@@ -46,11 +54,22 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
       } else {
         // Table just created, creating some rows
         const insert =
-          "INSERT INTO post (message, life_points, authorId) VALUES (?,?,?)";
-        // db.run(insert, ["test post", "12", "1"]);
-        // db.run(insert, ["test post number two", "-12", "2"]);
+          "INSERT INTO post (message, points, authorId) VALUES (?,?,?)";
+        db.run(insert, ["test post", "12", "1"]);
+        db.run(insert, ["test post number two", "-12", "2"]);
       }
     });
+    // db.run(voteTableQuery, (err) => {
+    //   if (err) {
+    //     // console.log(err);
+    //   } else {
+    //     // Table just created, creating some rows
+    //     const insert =
+    //       "INSERT INTO vote (type, postId, voterId) VALUES (?,?,?)";
+    //     db.run(insert, ["upvote", "1", "2"]);
+    //     db.run(insert, ["downvote", "2", "1"]);
+    //   }
+    // });
   }
 });
 

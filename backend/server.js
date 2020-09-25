@@ -277,6 +277,21 @@ app.delete("/post/:id", authenticateToken, (req, res, next) => {
   });
 });
 
+//UPVOTE/DOWNVOTE
+app.get("/upvote/:id", authenticateToken, (req, res, next) => {
+  const sql = "UPDATE post SET points = (points + 1) WHERE id = ?";
+  db.run(sql, req.params.id, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    console.log(result);
+    res.json({
+      message: "Success",
+    });
+  });
+});
+
 // Default response for any other request
 app.use((req, res) => {
   res.status(404).send("Sorry can't find that!");
