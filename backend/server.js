@@ -131,23 +131,25 @@ app.post("/login/", (req, res, next) => {
   });
 });
 
-app.get("/user/:id", authenticateToken, (req, res, next) => {
-  const userSql = "select * from user where id = ?";
+app.get("/user/:username", authenticateToken, (req, res, next) => {
+  const userSql = "select * from user where username = ?";
   const userPostsSql = "select * from post where authorId = ?";
-  const params = [req.params.id];
+  const userParams = [req.params.username];
+  const userPostsParams = [req.user.id];
   let posts = [];
-  db.all(userPostsSql, params, (err, rows) => {
+  db.all(userPostsSql, userPostsParams, (err, rows) => {
     if (err) {
       res.status(400).json({ error: err.message });
       return;
     }
     posts = rows;
   });
-  db.get(userSql, params, (err, row) => {
+  db.get(userSql, userParams, (err, row) => {
     if (err) {
       res.status(400).json({ error: err.message });
       return;
     }
+    delete row.password;
     res.json({
       message: "Success",
       data: row,
@@ -156,7 +158,7 @@ app.get("/user/:id", authenticateToken, (req, res, next) => {
   });
 });
 
-app.patch("/user/:id", (req, res, next) => {
+app.patch("/user/:id", authenticateToken, (req, res, next) => {
   const data = {
     username: req.body.username,
     email: req.body.email,
@@ -168,6 +170,11 @@ app.patch("/user/:id", (req, res, next) => {
   email = COALESCE(?,email), 
   password = COALESCE(?,password) 
   WHERE id = ?`;
+  //Prevent user from updating other user's details
+  if (Number(req.params.id) !== req.user.id) {
+    res.status(403).json({ message: "You can only update your own details." });
+    return;
+  }
   db.run(sql, params, function (err, result) {
     if (err) {
       res.status(400).json({ error: res.message });
@@ -182,8 +189,12 @@ app.patch("/user/:id", (req, res, next) => {
   });
 });
 
-app.delete("/user/:id", (req, res, next) => {
+app.delete("/user/:id", authenticateToken, (req, res, next) => {
   const sql = `DELETE FROM user WHERE id = ?`;
+  if (Number(req.params.id) !== req.user.id) {
+    res.status(403).json({ message: "You can only delete your own account." });
+    return;
+  }
   db.run(sql, req.params.id, function (err, result) {
     if (err) {
       res.status(400).json({ error: res.message });
@@ -209,53 +220,60 @@ app.get("/posts", authenticateToken, (req, res, next) => {
   });
 });
 
-app.get("/post/:id", authenticateToken, (req, res, next) => {
-  const sql = "select * from post where id = ?";
-  const params = [req.params.id];
-  db.get(sql, params, (err, row) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: row,
-    });
-  });
-});
-
 app.patch("/post/:id", authenticateToken, (req, res, next) => {
   const data = {
     message: req.body.message,
-    life_points: req.body.life_points,
   };
-  const params = [data.username, data.email, data.password, req.params.id];
-  const sql = `UPDATE post set 
-  message = COALESCE(?,message), 
-  life_points = COALESCE(?,life_points)
+  const getPostAuthorIdSql = `SELECT authorId from post WHERE id = ?`;
+  const getPostAuthorIdParams = [req.params.id];
+  const updatePostSql = `UPDATE post set 
+  message = COALESCE(?,message) 
   WHERE id = ?`;
-  db.run(sql, params, function (err, result) {
+  const updatePostParams = [data.message, req.params.id];
+  db.get(getPostAuthorIdSql, getPostAuthorIdParams, function (err, row) {
     if (err) {
       res.status(400).json({ error: res.message });
       return;
     }
-    delete data.password;
-    res.json({
-      message: "Success",
-      data: data,
-      changes: this.changes,
+    if (Number(req.user.id) !== Number(row.authorId)) {
+      res.status(403).json({ message: "You can only update your own posts." });
+      return;
+    }
+    db.run(updatePostSql, updatePostParams, function (err, result) {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.json({
+        message: "Success",
+        data: data,
+        changes: this.changes,
+      });
     });
   });
 });
 
 app.delete("/post/:id", authenticateToken, (req, res, next) => {
-  const sql = `DELETE FROM post WHERE id = ?`;
-  db.run(sql, req.params.id, function (err, result) {
+  const getPostAuthorIdSql = `SELECT authorId from post WHERE id = ?`;
+  const getPostAuthorIdParams = [req.params.id];
+  const deletePostSql = `DELETE FROM post WHERE id = ?`;
+
+  db.get(getPostAuthorIdSql, getPostAuthorIdParams, function (err, row) {
     if (err) {
       res.status(400).json({ error: res.message });
       return;
     }
-    res.json({ message: "deleted", changes: this.changes });
+    if (Number(req.user.id) !== Number(row.authorId)) {
+      res.status(403).json({ message: "You can only delete your own posts." });
+      return;
+    }
+    db.run(deletePostSql, req.params.id, function (err, result) {
+      if (err) {
+        res.status(400).json({ error: res.message });
+        return;
+      }
+      res.json({ message: "deleted", changes: this.changes });
+    });
   });
 });
 

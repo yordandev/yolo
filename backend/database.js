@@ -22,7 +22,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         date_created datetime default current_timestamp
         )`;
     const postTableQuery = `CREATE TABLE IF NOT EXISTS post (
-            postId integer PRIMARY KEY AUTOINCREMENT,
+            id integer PRIMARY KEY AUTOINCREMENT,
             message text NOT NULL, 
             life_points integer NOT NULL DEFAULT "0",
             date_created datetime DEFAULT current_timestamp,
