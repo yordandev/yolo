@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Posts from "../views/Posts.vue";
 import MyProfile from "../views/MyProfile";
 import MyPosts from "../views/MyPosts";
+import CreateAccount from "../views/CreateAccount";
 
 Vue.use(VueRouter);
 
@@ -27,6 +28,11 @@ const routes = [
     path: "/my-posts",
     name: "MyPosts",
     component: MyPosts,
+  },
+  {
+    path: "/create-account",
+    name: "CreateAccount",
+    component: CreateAccount,
   },
 ];
 

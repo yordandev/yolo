@@ -35,8 +35,8 @@
           <a-button type="primary">
             Sign Out
           </a-button>
-          <a-button type="primary">
-            Create Account
+          <a-button type="primary"
+            ><router-link to="/create-account"> Create Account</router-link>
           </a-button>
         </a-space>
       </a-layout-header>
