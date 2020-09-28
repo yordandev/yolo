@@ -5,6 +5,7 @@ import Posts from "../views/Posts.vue";
 import MyProfile from "../views/MyProfile";
 import MyPosts from "../views/MyPosts";
 import CreateAccount from "../views/CreateAccount";
+import SignIn from "../views/SignIn";
 
 Vue.use(VueRouter);
 
@@ -33,6 +34,11 @@ const routes = [
     path: "/create-account",
     name: "CreateAccount",
     component: CreateAccount,
+  },
+  {
+    path: "/sign-in",
+    name: "SignIn",
+    component: SignIn,
   },
 ];
 

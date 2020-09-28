@@ -30,10 +30,10 @@
       <a-layout-header align="end">
         <a-space size="large">
           <a-button type="primary">
-            Sign In
-          </a-button>
-          <a-button type="primary">
             Sign Out
+          </a-button>
+          <a-button type="primary"
+            ><router-link to="/sign-in"> Sign In</router-link>
           </a-button>
           <a-button type="primary"
             ><router-link to="/create-account"> Create Account</router-link>
