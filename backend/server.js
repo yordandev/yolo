@@ -220,6 +220,48 @@ app.get("/posts", authenticateToken, (req, res, next) => {
   });
 });
 
+app.get("/myposts", authenticateToken, (req, res, next) => {
+  const sql = "select * from post where authorId = ?";
+  const params = [req.user.id];
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "Success",
+      data: rows,
+    });
+  });
+});
+
+app.post("/posts/",authenticateToken, (req, res, next) => {
+  let errors = [];
+  if (!req.body.message) {
+    errors.push("No message provided");
+  }
+  if (errors.length) {
+    res.status(400).json({ error: errors.join(",") });
+    return;
+  }
+  let data = {
+    message: req.body.message,
+  };
+  const sql = "INSERT INTO post (message, authorId) VALUES (?,?)";
+  const params = [data.message, req.user.id];
+  db.run(sql, params, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    data.id = this.lastID;
+    res.json({
+      message: "Success",
+      data: data,
+    });
+  });
+});
+
 app.patch("/post/:id", authenticateToken, (req, res, next) => {
   const data = {
     message: req.body.message,

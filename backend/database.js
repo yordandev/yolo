@@ -44,8 +44,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         // Table just created, creating some rows
         const insert =
           "INSERT INTO user (username, email, password) VALUES (?,?,?)";
-        db.run(insert, ["yordan", "atyo18ux@student.ju.se", md5("test123")]);
-        db.run(insert, ["antonia", "zian18aw@example.com", md5("test123")]);
+        // db.run(insert, ["yordan", "atyo18ux@student.ju.se", md5("test123")]);
+        // db.run(insert, ["antonia", "zian18aw@example.com", md5("test123")]);
       }
     });
     db.run(postTableQuery, (err) => {
@@ -55,8 +55,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         // Table just created, creating some rows
         const insert =
           "INSERT INTO post (message, points, authorId) VALUES (?,?,?)";
-        db.run(insert, ["test post", "12", "1"]);
-        db.run(insert, ["test post number two", "-12", "2"]);
+        // db.run(insert, ["test post", "12", "1"]);
+        // db.run(insert, ["test post number two", "-12", "2"]);
       }
     });
     // db.run(voteTableQuery, (err) => {
