@@ -15,12 +15,18 @@
             <span>Posts</span></router-link
           >
         </a-menu-item>
+        <a-menu-item key="3">
+          <router-link to="/create-post">
+            <a-icon type="plus-circle" />
+            <span>Posts</span></router-link
+          >
+        </a-menu-item>
         <a-sub-menu key="sub1">
           <span slot="title"><a-icon type="user" /><span>Account</span></span>
-          <a-menu-item key="3">
+          <a-menu-item key="4">
             <router-link to="/my-profile"> My Profile</router-link>
           </a-menu-item>
-          <a-menu-item key="4">
+          <a-menu-item key="5">
             <router-link to="/my-posts"> My Posts</router-link>
           </a-menu-item>
         </a-sub-menu>
