@@ -18,7 +18,7 @@
         <a-menu-item key="3">
           <router-link to="/create-post">
             <a-icon type="plus-circle" />
-            <span>Posts</span></router-link
+            <span>Create Post</span></router-link
           >
         </a-menu-item>
         <a-sub-menu key="sub1">

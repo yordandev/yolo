@@ -18,8 +18,8 @@
           <h3>The information here is only visible to you.</h3>
           <p><strong>Email:</strong>username@email.com</p>
           <a-space>
-            <a-button>Delete your Account</a-button>
             <a-button type="primary">Update your Information</a-button>
+            <a-button>Delete your Account</a-button>
           </a-space>
         </a-col>
       </a-row>
