@@ -1,6 +1,9 @@
 <template>
   <a-layout-content style="margin: 0 16px">
-    <a-breadcrumb style="margin: 16px 0"> </a-breadcrumb>
+    <a-breadcrumb style="margin: 16px 0">
+      <a-breadcrumb-item><a href="../Home.vue">Home</a></a-breadcrumb-item
+      ><a-breadcrumb-item>Update Post</a-breadcrumb-item></a-breadcrumb
+    >
     <div
       :style="{
         padding: '24px',
@@ -9,7 +12,7 @@
       }"
     >
       <a-row type="flex" justify="center"
-        ><a-col><h1>Create Account</h1></a-col></a-row
+        ><a-col><h1>Update Post</h1></a-col></a-row
       >
       <a-row type="flex" justify="center">
         <a-col span="20">
@@ -18,24 +21,19 @@
             :label-col="labelCol"
             :wrapper-col="wrapperCol"
           >
-            <a-form-model-item label="Username"
-              ><a-input v-model="form.username" placeholder="Username"
-            /></a-form-model-item>
-            <a-form-model-item label="Email"
-              ><a-input v-model="form.email" placeholder="Email" type="email"
-            /></a-form-model-item>
-            <a-form-model-item label="Password"
+            <a-form-model-item label="Message"
               ><a-input
-                v-model="form.password"
-                placeholder="Password"
-                type="password"
+                v-model="form.message"
+                placeholder="Message  as already written"
+                type="textarea"
+                :rows="10"
             /></a-form-model-item>
             <a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
               <a-button type="primary" @click="handleSubmit">
-                Create
+                Update
               </a-button>
               <a-button style="margin-left: 10px;"
-                ><router-link to="/"> Cancel</router-link>
+                ><router-link to="/my-posts"> Cancel</router-link>
               </a-button>
             </a-form-model-item>
           </a-form-model>
@@ -54,9 +52,8 @@ export default {
       labelCol: { span: 5 },
       wrapperCol: { span: 14 },
       form: {
-        username: "",
-        email: "",
-        password: "",
+        message: "",
+        authorId: "userId",
       },
     };
   },

@@ -37,7 +37,11 @@
               id="buttonContainer"
               ><a-col>
                 <a-space>
-                  <a-button type="primary">Update</a-button>
+                  <a-button type="primary"
+                    ><router-link to="/update-post"
+                      >Update</router-link
+                    ></a-button
+                  >
                   <a-button>Delete</a-button>
                 </a-space>
               </a-col></a-row

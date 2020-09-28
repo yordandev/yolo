@@ -32,9 +32,6 @@
               <a-button type="primary" @click="handleSubmit">
                 Create
               </a-button>
-              <a-button style="margin-left: 10px;"
-                ><router-link to="/"> Cancel</router-link>
-              </a-button>
             </a-form-model-item>
           </a-form-model>
         </a-col>
