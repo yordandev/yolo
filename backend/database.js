@@ -18,7 +18,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         username text NOT NULL UNIQUE, 
         email text NOT NULL UNIQUE, 
         password text NOT NULL,
-		life_points integer DEFAULT "50",
+		life_points integer DEFAULT "2",
         date_created datetime default current_timestamp
         )`
 		const postTableQuery = `CREATE TABLE IF NOT EXISTS post (
@@ -37,7 +37,11 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
           voterId integer NOT NULL,
           FOREIGN KEY(postId) REFERENCES post(id) ON DELETE CASCADE,
           FOREIGN KEY(voterId) REFERENCES user(id) ON DELETE CASCADE
-      )`
+	  	)`
+		const blacklistedEmailTableQuery = `CREATE TABLE IF NOT EXISTS blacklisted_email (
+		id integer PRIMARY KEY AUTOINCREMENT,
+		email text NOT NULL
+		)`
 		db.run(userTableQuery, (err) => {
 			if (err) {
 				// console.log(err);
@@ -66,6 +70,12 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
 				const insert = 'INSERT INTO vote (type, postId, voterId) VALUES (?,?,?)'
 				// db.run(insert, ['upvote', '1', '2'])
 				// db.run(insert, ['downvote', '2', '1'])
+			}
+		})
+		db.run(blacklistedEmailTableQuery, (err) => {
+			if (err) {
+				// console.log(err);
+			} else {
 			}
 		})
 	}

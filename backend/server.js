@@ -7,7 +7,8 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const jwt = require('jsonwebtoken')
 
-const JWT_SECRET = 'f85689f551cf5e2fda79657812715cef6e77cf8361f02bc6d80915b8c4f41bd6'
+const JWT_SECRET =
+	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
 db.query = function (sql, params) {
 	var that = this
@@ -54,6 +55,7 @@ const authenticateToken = (req, res, next) => {
 		const params = [user.id]
 		const userPointsSql = 'SELECT life_points FROM user WHERE id = ?'
 		const deleteUserSql = 'DELETE FROM user WHERE id = ?'
+		const insertIntoBlacklistSql = 'INSERT INTO blacklisted_email (email) VALUES (?)'
 		const userPoints = await db.query(userPointsSql, params)
 
 		if (!userPoints.rows.length) {
@@ -61,6 +63,7 @@ const authenticateToken = (req, res, next) => {
 			return
 		}
 		if (userPoints.rows[0].life_points <= 0) {
+			await db.query(insertIntoBlacklistSql, user.email)
 			await db.query(deleteUserSql, params)
 			res.json({
 				message:
@@ -81,7 +84,7 @@ const authenticateToken = (req, res, next) => {
 	})
 }
 
-app.post('/signup/', (req, res, next) => {
+app.post('/signup/', async (req, res, next) => {
 	let errors = []
 	if (!req.body.username) {
 		errors.push('No username provided')
@@ -96,13 +99,22 @@ app.post('/signup/', (req, res, next) => {
 		res.status(400).json({ error: errors.join(', ') })
 		return
 	}
+
 	let data = {
 		username: req.body.username,
 		email: req.body.email,
 		password: md5(req.body.password),
 	}
+
+	const blacklistedEmailCheckSql = 'SELECT email FROM blacklisted_email WHERE email = ?'
 	const sql = 'INSERT INTO user (username, email, password) VALUES (?,?,?)'
 	const params = [data.username, data.email, data.password]
+
+	const blacklistedCheck = await db.query(blacklistedEmailCheckSql, data.email)
+	if (blacklistedCheck.rows.length) {
+		res.status(403).json({ error: 'Your email is blacklisted' })
+		return
+	}
 	db.run(sql, params, function (err, result) {
 		if (err) {
 			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.email') {
@@ -117,7 +129,6 @@ app.post('/signup/', (req, res, next) => {
 				return
 			}
 		}
-		delete data.password
 		data.id = this.lastID
 		data.life_points = 50
 		const token = generateAccessToken({
@@ -148,6 +159,7 @@ app.post('/signin/', async (req, res, next) => {
 	const signInSql = 'SELECT * FROM user WHERE username = ? AND password = ?'
 	const signInParams = [req.body.username, md5(req.body.password)]
 	const deleteUserSql = 'DELETE FROM user WHERE id = ?'
+	const insertIntoBlacklistSql = 'INSERT INTO blacklisted_email (email) VALUES (?)'
 
 	try {
 		const data = await db.query(signInSql, signInParams)
@@ -158,6 +170,7 @@ app.post('/signin/', async (req, res, next) => {
 		const userData = data.rows[0]
 		if (userData.life_points <= 0) {
 			await db.query(deleteUserSql, userData.id)
+			await db.query(insertIntoBlacklistSql, userData.email)
 			res.json({
 				message:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
@@ -441,10 +454,10 @@ app.get('/posts/downvote/:id', authenticateToken, async (req, res, next) => {
 			authorId = postExists.rows[0].authorId
 		}
 
-		if (authorId === req.user.id) {
-			res.json({ message: 'You cannot vote for yourself' })
-			return
-		}
+		// if (authorId === req.user.id) {
+		// 	res.json({ message: 'You cannot vote for yourself' })
+		// 	return
+		// }
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
