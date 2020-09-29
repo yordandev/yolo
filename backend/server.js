@@ -9,6 +9,16 @@ const jwt = require('jsonwebtoken')
 
 const JWT_SECRET = 'f85689f551cf5e2fda79657812715cef6e77cf8361f02bc6d80915b8c4f41bd6'
 
+db.query = function (sql, params) {
+	var that = this
+	return new Promise(function (resolve, reject) {
+		that.all(sql, params, function (error, rows) {
+			if (error) reject(error)
+			else resolve({ rows: rows })
+		})
+	})
+}
+
 // Server port
 const PORT = 8080
 // Start server
@@ -81,6 +91,7 @@ app.post('/signup/', (req, res, next) => {
 		}
 		delete data.password
 		data.id = this.lastID
+		data.life_points = 50
 		const token = generateAccessToken({
 			username: req.body.username,
 			email: req.body.email,
@@ -93,7 +104,7 @@ app.post('/signup/', (req, res, next) => {
 	})
 })
 
-app.post('/login/', (req, res, next) => {
+app.post('/login/', async (req, res, next) => {
 	let errors = []
 	if (!req.body.username) {
 		errors.push('No username provided')
@@ -109,88 +120,43 @@ app.post('/login/', (req, res, next) => {
 	const loginSql = 'SELECT * FROM user WHERE username = ? AND password = ?'
 	const loginParams = [req.body.username, md5(req.body.password)]
 	const sumUserLifePointsSql = 'SELECT SUM(points) FROM post WHERE authorId = ?'
-	const addUserLifePointsSql = 'UPDATE user SET life_points = life_points + ? WHERE id = ?'
-	const userLifePointsSql = 'SELECT life_points FROM user WHERE id = ?'
+	const updateUserLifePointsSql = 'UPDATE user SET life_points = ? WHERE id = ?'
 	const deleteUserSql = 'DELETE FROM user WHERE id = ?'
-	const deleteUserPostsSql = 'DELETE from post WHERE authorId = ?'
-	const deleteUserVotes = 'DELETE from vote WHERE voterId = ?'
 
 	try {
-		db.get(loginSql, loginParams, async (err, row) => {
-			if (err) {
-				res.status(400).json({ error: err.message })
-				return
-			}
-			if (!row) {
-				res.status(400).json({ error: 'Invalid username or password or user not found.' })
-				return
-			}
-			delete row.password
-			const userData = row
-			console.log(userData)
-			let newLifePoints = 0
-
-			const points = await db.get(sumUserLifePointsSql, userData.id)
-			console.log("Points: " + points)
-
-			// newLifePoints = userData['life_points'] + result['SUM(points)']
-
-			// console.log('New life points: ' + newLifePoints)
-
-			// db.get(sumUserLifePointsSql, userData.id, (err, result) => {
-			// 	if (err) {
-			// 		res.status(400).json({ error: err.message })
-			// 		return
-			// 	}
-			// 	const newPoints = Number(result['SUM(points)'])
-			// 	console.log('New points: ' + newPoints)
-			// 	db.run(addUserLifePointsSql, [newPoints, userData.id], (err, result) => {
-			// 		if (err) {
-			// 			res.status(400).json({ error: err.message })
-			// 			return
-			// 		}
-			// 		db.get(userLifePointsSql, userData.id, (err, row) => {
-			// 			if (row.life_points === 0) {
-			// 				console.log('About to delete')
-			// 				db.run(deleteUserVotes, userData.id, (err, result) => {
-			// 					if (err) {
-			// 						res.status(400).json({ error: err.message })
-			// 						return
-			// 					}
-			// 					db.run(deleteUserPostsSql, userData.id, (err, row) => {
-			// 						if (err) {
-			// 							res.status(400).json({ error: err.message })
-			// 							return
-			// 						}
-			// 						db.run(deleteUserSql, userData.id, (err, row) => {
-			// 							if (err) {
-			// 								res.status(400).json({ error: err.message })
-			// 								return
-			// 							}
-			// 							res.json({
-			// 								message:
-			// 									'Your account, your posts and your votes were deleted because you hit 0 life points.',
-			// 							})
-			// 						})
-			// 					})
-			// 				})
-			// 			}
-			// 			delete userData.password
-			// 			const token = generateAccessToken({
-			// 				username: req.body.username,
-			// 				email: userData.email,
-			// 			})
-			// 			res.json({
-			// 				message: 'Success',
-			// 				data: userData,
-			// 				token: token,
-			// 			})
-			// 		})
-			// 	})
-			// })
+		const data = await db.query(loginSql, loginParams)
+		if (data.rows.length === 0) {
+			res.status(400).json({ error: 'Invalid username or password or user does not exist!' })
+			return
+		}
+		const userData = data.rows[0]
+		const tempPoints = await db.query(sumUserLifePointsSql, userData.id)
+		const postPoints = tempPoints.rows[0]['SUM(points)'] || 0
+		console.log(postPoints, userData['life_points'])
+		const newLifePoints = Number(userData['life_points']) + Number(postPoints)
+		if (newLifePoints <= 0) {
+			console.log('DELETING USER')
+			await db.query(deleteUserSql, userData.id)
+			res.json({
+				message:
+					'Your account, your posts and your votes were deleted because you hit 0 life points.',
+			})
+			return
+		}
+		console.log("User's new life points: " + newLifePoints)
+		await db.query(updateUserLifePointsSql, [newLifePoints, userData.id])
+		delete userData.password
+		const token = generateAccessToken({
+			username: req.body.username,
+			email: userData.email,
+		})
+		res.json({
+			message: 'Success',
+			data: userData,
+			token: token,
 		})
 	} catch (error) {
-		res.status(400).json({ error: err.message })
+		res.status(400).json({ error: error.message })
 	}
 })
 
