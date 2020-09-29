@@ -30,6 +30,22 @@
                 </a-space>
               </a-col>
             </a-row>
+            <a-row
+              type="flex"
+              justify="center"
+              align="middle"
+              id="buttonContainer"
+              ><a-col>
+                <a-space>
+                  <a-button type="primary"
+                    ><router-link to="/update-post"
+                      >Update</router-link
+                    ></a-button
+                  >
+                  <a-button>Delete</a-button>
+                </a-space>
+              </a-col></a-row
+            >
           </a-card>
           <!-- card ends -->
         </a-space>
@@ -46,5 +62,8 @@ export default {};
 <style scoped>
 .cardSize {
   width: 40vw;
+}
+#buttonContainer {
+  margin: 2vh 0 0 0;
 }
 </style>
