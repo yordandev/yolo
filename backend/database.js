@@ -18,7 +18,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         username text NOT NULL UNIQUE, 
         email text NOT NULL UNIQUE, 
         password text NOT NULL,
-        life_points integer DEFAULT "0",
+        life_points integer DEFAULT "2",
         date_created datetime default current_timestamp
         )`
 		const postTableQuery = `CREATE TABLE IF NOT EXISTS post (
@@ -42,9 +42,9 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
 				// console.log(err);
 			} else {
 				// Table just created, creating some rows
-				// const insert = 'INSERT INTO user (username, email, password) VALUES (?,?,?)'
-				// db.run(insert, ['yordan', 'atyo18ux@student.ju.se', md5('test123')])
-				// db.run(insert, ['antonia', 'zian18aw@example.com', md5('test123')])
+				const insert = 'INSERT INTO user (username, email, password, life_points) VALUES (?,?,?,?)'
+				// db.run(insert, ['yordan123', 'atyo1813x@student.ju.se', md5('test123'), '1'])
+				// db.run(insert, ['test', 'test@example.com', md5('test123')], 1)
 			}
 		})
 		db.run(postTableQuery, (err) => {
@@ -52,9 +52,9 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
 				// console.log(err);
 			} else {
 				// Table just created, creating some rows
-				// const insert = 'INSERT INTO post (message, points, authorId) VALUES (?,?,?)'
+				const insert = 'INSERT INTO post (message, points, authorId) VALUES (?,?,?)'
 				// db.run(insert, ['test post', '12', '1'])
-				// db.run(insert, ['test post number two', '-12', '2'])
+				// db.run(insert, ['test post number two', '1', '3'])
 			}
 		})
 		db.run(voteTableQuery, (err) => {
@@ -62,9 +62,9 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
 				// console.log(err);
 			} else {
 				// Table just created, creating some rows
-				// const insert = 'INSERT INTO vote (type, postId, voterId) VALUES (?,?,?)'
-				// db.run(insert, ["upvote", "1", "2"]);
-				// db.run(insert, ["downvote", "2", "1"]);
+				const insert = 'INSERT INTO vote (type, postId, voterId) VALUES (?,?,?)'
+				// db.run(insert, ['upvote', '1', '2'])
+				// db.run(insert, ['downvote', '2', '1'])
 			}
 		})
 	}
