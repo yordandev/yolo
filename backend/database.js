@@ -1,5 +1,4 @@
 const sqlite3 = require('sqlite3').verbose()
-const md5 = require('md5')
 
 const DBSOURCE = 'db.sqlite'
 
@@ -18,7 +17,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         username text NOT NULL UNIQUE, 
         email text NOT NULL UNIQUE, 
         password text NOT NULL,
-		life_points integer DEFAULT "1",
+		life_points integer DEFAULT "50",
         date_created datetime default current_timestamp
         )`
 		const postTableQuery = `CREATE TABLE IF NOT EXISTS post (

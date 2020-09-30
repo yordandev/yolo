@@ -386,10 +386,10 @@ app.get('/posts/upvote/:id', authenticateToken, async (req, res, next) => {
 			authorId = postExists.rows[0].authorId
 		}
 
-		// if (authorId === req.user.id) {
-		// 	res.json({ message: 'You cannot vote for yourself' })
-		// 	return
-		// }
+		if (authorId === req.user.id) {
+			res.json({ message: 'You cannot vote for yourself' })
+			return
+		}
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
@@ -427,10 +427,10 @@ app.get('/posts/downvote/:id', authenticateToken, async (req, res, next) => {
 			authorId = postExists.rows[0].authorId
 		}
 
-		// if (authorId === req.user.id) {
-		// 	res.json({ message: 'You cannot vote for yourself' })
-		// 	return
-		// }
+		if (authorId === req.user.id) {
+			res.json({ message: 'You cannot vote for yourself' })
+			return
+		}
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
