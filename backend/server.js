@@ -192,33 +192,6 @@ app.post('/signin/', async (req, res, next) => {
 	}
 })
 
-app.get('/users/:username', authenticateToken, async (req, res, next) => {
-	if (req.params.username === ' ') {
-		res.status(400).json({ error: 'Username not provided' })
-	}
-	const userSql = 'SELECT * FROM user WHERE username = ?'
-	const userPostsSql = 'SELECT * FROM post WHERE authorId = ? ORDER BY date_created DESC'
-	const userParams = [req.params.username]
-	const userPostsParams = [req.user.id]
-
-	try {
-		const postsData = await db.query(userPostsSql, userPostsParams)
-		const userData = await db.query(userSql, userParams)
-		const posts = postsData.rows
-		if (!userData.rows.length) {
-			res.status(404).json({ error: 'No such user found' })
-		}
-		const user = userData.rows[0]
-		delete user.password
-		res.json({
-			data: user,
-			posts: posts,
-		})
-	} catch (error) {
-		res.status(400).json({ error: error.message })
-	}
-})
-
 app.get('/myposts', authenticateToken, async (req, res, next) => {
 	const sql = 'SELECT * FROM post WHERE authorId = ? ORDER BY date_created DESC'
 	const params = [req.user.id]
@@ -316,8 +289,8 @@ app.post('/posts/', authenticateToken, (req, res, next) => {
 		message: req.body.message,
 		username: req.user.username,
 	}
-	const sql = 'INSERT INTO post (message, authorId, authorUsername) VALUES (?,?,?)'
-	const params = [data.message, req.user.id, req.user.username]
+	const sql = 'INSERT INTO post (message, authorId) VALUES (?,?)'
+	const params = [data.message, req.user.id]
 	db.run(sql, params, function (err, result) {
 		if (err) {
 			res.status(400).json({ error: err.message })
@@ -413,10 +386,10 @@ app.get('/posts/upvote/:id', authenticateToken, async (req, res, next) => {
 			authorId = postExists.rows[0].authorId
 		}
 
-		if (authorId === req.user.id) {
-			res.json({ message: 'You cannot vote for yourself' })
-			return
-		}
+		// if (authorId === req.user.id) {
+		// 	res.json({ message: 'You cannot vote for yourself' })
+		// 	return
+		// }
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
