@@ -6,6 +6,7 @@ const md5 = require('md5')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const jwt = require('jsonwebtoken')
+const cors = require('cors')
 
 const JWT_SECRET =
 	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -30,6 +31,7 @@ app.listen(PORT, () => {
 app.use(morgan('tiny'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cors())
 
 // Root endpoint
 app.get('/', (req, res, next) => {

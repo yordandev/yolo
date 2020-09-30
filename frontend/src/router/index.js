@@ -8,6 +8,7 @@ import CreateAccount from "../views/CreateAccount";
 import SignIn from "../views/SignIn";
 import CreatePost from "../views/CreatePost";
 import UpdatePost from "../views/UpdatePost";
+import Test from '../views/Test.vue'
 
 Vue.use(VueRouter);
 
@@ -51,6 +52,11 @@ const routes = [
     path: "/update-post",
     name: "UpdatePost",
     component: UpdatePost,
+  },
+  {
+    path: "/test",
+    name: "Test",
+    component: Test,
   },
 ];
 

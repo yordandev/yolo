@@ -1,36 +1,35 @@
 <template>
-  <a-layout-content style="margin: 0 16px">
-    <a-breadcrumb style="margin: 16px 0"> </a-breadcrumb>
-    <div
-      :style="{
-        padding: '24px',
-        background: '#fff',
-        minHeight: '360px',
-      }"
-    >
-      <a-row type="flex" justify="space-around" align="middle">
-        <a-col>
-          <h1>📜Welcome to YOLO!📜</h1>
-        </a-col>
-      </a-row>
-      <a-row type="flex" justify="space-around" align="middle">
-        <a-col>
-          <p>
-            📌YOLO is a message board for anyone to use.<br />
-            Every post can be upvoted⬆️ or downvoted⬇️ by the community, which
-            leads to an increase or decrease in life-points🔋.<br />
-            If your life-points hits 0, your account will automatically be
-            deleted💣.
-          </p>
-        </a-col>
-      </a-row>
-    </div>
-  </a-layout-content>
+	<a-layout-content style="margin: 0 16px">
+		<a-breadcrumb style="margin: 16px 0"> </a-breadcrumb>
+		<div
+			:style="{
+				padding: '24px',
+				background: '#fff',
+				minHeight: '360px',
+			}"
+		>
+			<a-row type="flex" justify="space-around" align="middle">
+				<a-col>
+					<h1>📜Welcome to YOLO!📜</h1>
+				</a-col>
+			</a-row>
+			<a-row type="flex" justify="space-around" align="middle">
+				<a-col>
+					<p>
+						📌YOLO is a message board for anyone to use.<br />
+						Every post can be upvoted⬆️ or downvoted⬇️ by the community, which leads to an increase
+						or decrease in life-points🔋.<br />
+						If your life-points hits 0, your account will automatically be deleted💣.
+					</p>
+				</a-col>
+			</a-row>
+		</div>
+	</a-layout-content>
 </template>
 
 <script>
 // @ is an alias to /src
 
-export default {};
+export default {}
 </script>
 <style scoped></style>
