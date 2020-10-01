@@ -52,18 +52,6 @@ module.exports.signIn = async function(username, password) {
 	}
 }
 
-module.exports.getPosts = async function() {
-	let data
-	try {
-		await axios.get('/posts').then((res) => {
-			data = res.data
-		})
-		return data
-	} catch (err) {
-		throw err.message
-	}
-}
-
 module.exports.getMyPosts = async function() {
 	let data
 	try {
@@ -99,6 +87,78 @@ module.exports.deleteMyProfile = async function() {
 		const decoded = jwt.decode(token)
 		await axios.delete(`/users/${decoded.id}`).then((res) => {
 			data = res.data.message
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.getPosts = async function() {
+	let data
+	try {
+		await axios.get('/posts').then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.createPost = async function(message) {
+	let data
+	try {
+		await axios.post('/posts', { message: message }).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.updatePost = async function(id, message) {
+	let data
+	try {
+		await axios.patch(`/posts/${id}`, { message: message }).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.deletePost = async function(id) {
+	let data
+	try {
+		await axios.delete(`/posts/${id}`).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.upvotePost = async function(id) {
+	let data
+	try {
+		await axios.get(`/posts/upvote/${id}`).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
+module.exports.downvotePost = async function(id) {
+	let data
+	try {
+		await axios.get(`/posts/downvote/${id}`).then((res) => {
+			data = res.data
 		})
 		return data
 	} catch (err) {

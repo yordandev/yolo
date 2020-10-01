@@ -5,10 +5,15 @@
 			<a-button @click.prevent="clearToken">Clear token</a-button>
 			<a-button @click.prevent="signUp">Sign Up</a-button>
 			<a-button @click.prevent="signIn">Sign In</a-button>
-			<a-button @click.prevent="getPosts">Get posts</a-button>
 			<a-button @click.prevent="getMyPosts">Get my posts</a-button>
 			<a-button @click.prevent="updateMyProfile">Update My Profile</a-button>
 			<a-button @click.prevent="deleteMyProfile">Delete My Profile</a-button>
+			<a-button @click.prevent="getPosts">Get posts</a-button>
+			<a-button @click.prevent="createPost">Create post</a-button>
+			<a-button @click.prevent="updatePost">Update post</a-button>
+			<a-button @click.prevent="deletePost">Delete post</a-button>
+			<a-button @click.prevent="upvotePost">Upvote post</a-button>
+			<a-button @click.prevent="downvotePost">Downvote post</a-button>
 		</div>
 	</a-layout-content>
 </template>
@@ -38,12 +43,6 @@ export default {
 				.then((res) => console.log('RESE2' + res.data))
 				.catch((err) => console.log(err))
 		},
-		getPosts: () => {
-			client
-				.getPosts()
-				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
-		},
 		getMyPosts: () => {
 			client
 				.getMyPosts()
@@ -62,10 +61,43 @@ export default {
 				.then((res) => console.log(res))
 				.catch((err) => console.log(err))
 		},
+		getPosts: () => {
+			client
+				.getPosts()
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
+		createPost: () => {
+			client
+				.createPost('test message')
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
+		updatePost: () => {
+			client
+				.updatePost(7, 'Updated message')
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
+		deletePost: () => {
+			client
+				.deletePost(7)
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
+		upvotePost: () => {
+			client
+				.upvotePost(9)
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
+		downvotePost: () => {
+			client
+				.downvotePost(7)
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.log(err))
+		},
 	},
-	// created: () => {
-	// 	client.signIn('test123', 'test123')
-	// },
 }
 </script>
 
