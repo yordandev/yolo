@@ -11,6 +11,8 @@ const cors = require('cors')
 const JWT_SECRET =
 	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
+const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
 db.query = function (sql, params) {
 	var that = this
 	return new Promise(function (resolve, reject) {
@@ -33,11 +35,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors())
 
-// Root endpoint
-app.get('/', (req, res, next) => {
-	res.json({ message: 'uhhh, what is it you want me to do exactly?' })
-})
-
 //USER/AUTHENTICATION ENDPOINTS
 const generateAccessToken = (data) =>
 	// expires after an hour
@@ -48,12 +45,15 @@ const authenticateToken = (req, res, next) => {
 	const authHeader = req.headers['authorization']
 	const token = authHeader && authHeader.split(' ')[1]
 	if (token == null) {
-		return res.sendStatus(401)
+		return res.status(401).json({ error: 'You need to be authenticated!' })
 	} // if there is no token attached to the headers
 
 	jwt.verify(token, JWT_SECRET, async (err, user) => {
-		if (err) return res.sendStatus(403)
+		if (err) {
+			return res.status(403).json({ error: 'You need to be authenticated!' })
+		}
 		const sql = 'select * from user where id = ?'
+		console.log("USER ID " +user.id)
 		const params = [user.id]
 		const userPointsSql = 'SELECT life_points FROM user WHERE id = ?'
 		const deleteUserSql = 'DELETE FROM user WHERE id = ?'
@@ -86,6 +86,11 @@ const authenticateToken = (req, res, next) => {
 	})
 }
 
+// Root endpoint
+app.get('/', authenticateToken, (req, res, next) => {
+	res.json({ message: 'uhhh, what is it you want me to do exactly?' })
+})
+
 app.post('/signup/', async (req, res, next) => {
 	let errors = []
 	if (!req.body.username) {
@@ -93,6 +98,9 @@ app.post('/signup/', async (req, res, next) => {
 	}
 	if (!req.body.email) {
 		errors.push('No email provided')
+	}
+	if (!emailRegex.test(req.body.email)) {
+		errors.push('Email is not valid')
 	}
 	if (!req.body.password) {
 		errors.push('No password provided')
@@ -133,6 +141,7 @@ app.post('/signup/', async (req, res, next) => {
 		}
 		data.id = this.lastID
 		data.life_points = 50
+		delete data.password
 		const token = generateAccessToken({
 			id: data.id,
 			username: data.username,
@@ -166,7 +175,7 @@ app.post('/signin/', async (req, res, next) => {
 	try {
 		const data = await db.query(signInSql, signInParams)
 		if (!data.rows.length) {
-			res.status(400).json({ error: 'Invalid username or password or user does not exist!' })
+			res.status(400).json({ error: 'Invalid username/password or user does not exist!' })
 			return
 		}
 		const userData = data.rows[0]
@@ -180,6 +189,7 @@ app.post('/signin/', async (req, res, next) => {
 			return
 		}
 		delete userData.password
+		delete userData.date_created
 		const token = generateAccessToken({
 			id: userData.id,
 			username: userData.username,
@@ -209,6 +219,10 @@ app.get('/myposts', authenticateToken, async (req, res, next) => {
 })
 
 app.patch('/users/:id', authenticateToken, async (req, res, next) => {
+	if (!req.params.id) {
+		res.status(400).json({ error: 'No user ID provided.' })
+		return
+	}
 	if (!req.body.username && !req.body.password) {
 		res.status(400).json({ error: 'Nothing to update' })
 		return
@@ -224,7 +238,7 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 		password = COALESCE(?,password) 
 		WHERE id = ?`
 
-	//Prevent user FROM updating other user's details
+	//Prevent user from updating other user's details
 	if (Number(req.params.id) !== req.user.id) {
 		res.status(403).json({ message: 'You can only update your own details.' })
 		return

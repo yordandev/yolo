@@ -34,68 +34,68 @@ export default {
 		signUp: () => {
 			client
 				.signUp('yordan', 'yordan@yordan.com', 'yordan123')
-				.then((res) => console.log('RESE' + res.data))
-				.catch((err) => console.log(err))
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.error(err))
 		},
 		signIn: () => {
 			client
 				.signIn('yordan', 'yordan123')
-				.then((res) => console.log('RESE2' + res.data))
-				.catch((err) => console.log(err))
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.error(err))
 		},
 		getMyPosts: () => {
 			client
 				.getMyPosts()
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		updateMyProfile: () => {
 			client
 				.updateMyProfile('Testing')
 				.then((res) => console.log(res))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		deleteMyProfile: () => {
 			client
 				.deleteMyProfile()
 				.then((res) => console.log(res))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		getPosts: () => {
 			client
 				.getPosts()
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		createPost: () => {
 			client
 				.createPost('test message')
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		updatePost: () => {
 			client
 				.updatePost(7, 'Updated message')
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		deletePost: () => {
 			client
 				.deletePost(7)
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		upvotePost: () => {
 			client
 				.upvotePost(9)
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 		downvotePost: () => {
 			client
 				.downvotePost(7)
 				.then((res) => console.log(JSON.stringify(res.data)))
-				.catch((err) => console.log(err))
+				.catch((err) => console.error(err))
 		},
 	},
 }

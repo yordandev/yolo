@@ -22,6 +22,16 @@ axios.interceptors.request.use(
 	}
 )
 
+axios.interceptors.response.use(
+	(config) => config,
+	async (error) => {
+		if (error.response.status === 403) {
+			return Promise.reject(new Error('Unauthorized'))
+		}
+		return Promise.reject(error)
+	}
+)
+
 module.exports.signUp = async function(username, email, password) {
 	clearToken()
 	let data
@@ -48,8 +58,12 @@ module.exports.signIn = async function(username, password) {
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		throw err.response.data.error
 	}
+}
+
+module.exports.signOut = function() {
+	clearToken()
 }
 
 module.exports.getMyPosts = async function() {
@@ -60,7 +74,7 @@ module.exports.getMyPosts = async function() {
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		throw err.response.data.error
 	}
 }
 
@@ -68,6 +82,9 @@ module.exports.updateMyProfile = async function(username, password) {
 	let data
 	try {
 		const token = getToken()
+		if (!token) {
+			throw new Error('Unauthenticated')
+		}
 		const decoded = jwt.decode(token)
 		await axios
 			.patch(`/users/${decoded.id}`, { username: username, password: password })
@@ -84,6 +101,9 @@ module.exports.deleteMyProfile = async function() {
 	let data
 	try {
 		const token = getToken()
+		if (!token) {
+			throw new Error('Unauthenticated')
+		}
 		const decoded = jwt.decode(token)
 		await axios.delete(`/users/${decoded.id}`).then((res) => {
 			data = res.data.message

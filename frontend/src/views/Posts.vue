@@ -23,6 +23,7 @@
 							<a-col :span="3">
 								<a-space direction="vertical">
 									<a-button><a-icon type="up"/></a-button>
+									<p>0</p>
 									<a-button><a-icon type="down"/></a-button>
 								</a-space>
 							</a-col>
