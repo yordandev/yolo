@@ -14,7 +14,7 @@ const JWT_SECRET =
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
 db.query = function (sql, params) {
-	var that = this
+	const that = this
 	return new Promise(function (resolve, reject) {
 		that.all(sql, params, function (error, rows) {
 			if (error) reject(error)
@@ -372,7 +372,6 @@ app.delete('/posts/:id', authenticateToken, (req, res, next) => {
 				res.status(400).json({ error: res.message })
 				return
 			}
-			console.log("DELEtED")
 			res.json({ message: 'Deleted' })
 		})
 	})
