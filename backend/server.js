@@ -209,20 +209,18 @@ app.get('/myposts', authenticateToken, async (req, res, next) => {
 })
 
 app.patch('/users/:id', authenticateToken, async (req, res, next) => {
-	if (!req.body.username && !req.body.email && !req.body.password) {
+	if (!req.body.username && !req.body.password) {
 		res.status(400).json({ error: 'Nothing to update' })
 		return
 	}
 
 	const data = {
 		username: req.body.username,
-		email: req.body.email,
 		password: req.body.password ? md5(req.body.password) : null,
 	}
-	const params = [data.username, data.email, data.password, req.params.id]
+	const params = [data.username, data.password, req.params.id]
 	const sql = `UPDATE user SET 
 		username = COALESCE(?,username), 
-		email = COALESCE(?,email), 
 		password = COALESCE(?,password) 
 		WHERE id = ?`
 
@@ -233,14 +231,12 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 	}
 	db.run(sql, params, function (err, result) {
 		if (err) {
-			if (data.username && data.email) {
-				res.status(400).json({ error: 'Username or email are taken.' })
-			} else if (data.username) {
+			if (data.username) {
 				res.status(400).json({ error: 'Username taken' })
-			} else if (data.email) {
-				res.status(400).json({ error: 'Email taken ' })
+				return
 			} else {
 				res.status(400).json({ error: err.message })
+				return
 			}
 			return
 		}

@@ -64,13 +64,13 @@ module.exports.getMyPosts = async function() {
 	}
 }
 
-module.exports.updateMyProfile = async function(username, email, password) {
+module.exports.updateMyProfile = async function(username, password) {
 	let data
 	try {
 		const token = getToken()
 		const decoded = jwt.decode(token)
 		await axios
-			.patch(`/users/${decoded.id}`, { username: username, email: email, password: password })
+			.patch(`/users/${decoded.id}`, { username: username, password: password })
 			.then((res) => {
 				data = res.data.message
 			})

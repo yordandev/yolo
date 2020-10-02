@@ -9,7 +9,7 @@
 			}"
 		>
 			<a-row type="flex" justify="center"
-				><a-col><h1>Create Account</h1></a-col></a-row
+				><a-col><h1>Sign Up</h1></a-col></a-row
 			>
 			<a-row type="flex" justify="center">
 				<a-col span="20">

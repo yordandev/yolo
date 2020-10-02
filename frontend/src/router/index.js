@@ -4,7 +4,7 @@ import Home from "../views/Home.vue";
 import Posts from "../views/Posts.vue";
 import MyProfile from "../views/MyProfile";
 import MyPosts from "../views/MyPosts";
-import CreateAccount from "../views/CreateAccount";
+import SignUp from "../views/SignUp";
 import SignIn from "../views/SignIn";
 import CreatePost from "../views/CreatePost";
 import UpdatePost from "../views/UpdatePost";
@@ -34,9 +34,9 @@ const routes = [
     component: MyPosts,
   },
   {
-    path: "/create-account",
-    name: "CreateAccount",
-    component: CreateAccount,
+    path: "/sign-up",
+    name: "SignUp",
+    component: SignUp,
   },
   {
     path: "/sign-in",

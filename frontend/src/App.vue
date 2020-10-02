@@ -39,9 +39,7 @@
 						Sign Out
 					</a-button>
 					<a-button type="primary"><router-link to="/sign-in"> Sign In</router-link> </a-button>
-					<a-button type="primary"
-						><router-link to="/create-account"> Create Account</router-link>
-					</a-button>
+					<a-button type="primary"><router-link to="/sign-up"> Sign up</router-link> </a-button>
 				</a-space>
 			</a-layout-header>
 			<router-view></router-view>
