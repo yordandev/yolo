@@ -28,6 +28,9 @@ axios.interceptors.response.use(
 		if (error.response.status === 403) {
 			return Promise.reject(new Error('Unauthorized'))
 		}
+		if (error.response.status === 404) {
+			return Promise.reject(new Error('Resource not found'))
+		}
 		return Promise.reject(error)
 	}
 )
@@ -153,8 +156,8 @@ module.exports.updatePost = async function(id, message) {
 module.exports.deletePost = async function(id) {
 	let data
 	try {
-		await axios.delete(`/posts/${id}`).then((res) => {
-			data = res.data
+		await axios.delete(`/posts/${id}`).then(() => {
+			data = 'Deleted'
 		})
 		return data
 	} catch (err) {
@@ -166,7 +169,7 @@ module.exports.upvotePost = async function(id) {
 	let data
 	try {
 		await axios.get(`/posts/upvote/${id}`).then((res) => {
-			data = res.data
+			data = res.data.message
 		})
 		return data
 	} catch (err) {
@@ -178,7 +181,7 @@ module.exports.downvotePost = async function(id) {
 	let data
 	try {
 		await axios.get(`/posts/downvote/${id}`).then((res) => {
-			data = res.data
+			data = res.data.message
 		})
 		return data
 	} catch (err) {

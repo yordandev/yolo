@@ -53,7 +53,6 @@ const authenticateToken = (req, res, next) => {
 			return res.status(403).json({ error: 'You need to be authenticated!' })
 		}
 		const sql = 'select * from user where id = ?'
-		console.log("USER ID " +user.id)
 		const params = [user.id]
 		const userPointsSql = 'SELECT life_points FROM user WHERE id = ?'
 		const deleteUserSql = 'DELETE FROM user WHERE id = ?'
@@ -373,7 +372,8 @@ app.delete('/posts/:id', authenticateToken, (req, res, next) => {
 				res.status(400).json({ error: res.message })
 				return
 			}
-			res.json({ message: 'deleted' })
+			console.log("DELEtED")
+			res.json({ message: 'Deleted' })
 		})
 	})
 })

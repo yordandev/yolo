@@ -33,7 +33,7 @@ export default {
 		},
 		signUp: () => {
 			client
-				.signUp('yordan', 'yordan@yordan.com', 'yordan123')
+				.signUp('yordan', 'yorddan@yordan.com', 'yordan123')
 				.then((res) => console.log(JSON.stringify(res.data)))
 				.catch((err) => console.error(err))
 		},
@@ -81,20 +81,20 @@ export default {
 		},
 		deletePost: () => {
 			client
-				.deletePost(7)
-				.then((res) => console.log(JSON.stringify(res.data)))
+				.deletePost(6)
+				.then((res) => console.log(res))
 				.catch((err) => console.error(err))
 		},
 		upvotePost: () => {
 			client
 				.upvotePost(9)
-				.then((res) => console.log(JSON.stringify(res.data)))
+				.then((res) => console.log(res))
 				.catch((err) => console.error(err))
 		},
 		downvotePost: () => {
 			client
-				.downvotePost(7)
-				.then((res) => console.log(JSON.stringify(res.data)))
+				.downvotePost(8)
+				.then((res) => console.log(res))
 				.catch((err) => console.error(err))
 		},
 	},
