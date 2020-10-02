@@ -58,6 +58,7 @@
 // @ is an alias to /src
 
 export default {
+<<<<<<< Updated upstream
 	data() {
 		let validatePass = (rule, value, callback) => {
 			if (this.form.confirmPassword !== '') {
@@ -111,5 +112,60 @@ export default {
 		},
 	},
 }
+=======
+  data() {
+    const validatePass = (rule, value, callback) => {
+      if (this.form.confirmPassword !== "") {
+        this.$refs.ruleForm.validateField("checkPass");
+      } else {
+        callback();
+      }
+    };
+    const validatePass2 = (rule, value, callback) => {
+      if (value !== this.form.password) {
+        callback(new Error("Two inputs don't match!"));
+      } else {
+        callback();
+      }
+    };
+    return {
+      labelCol: { span: 5 },
+      wrapperCol: { span: 14 },
+      form: {
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      },
+      rules: {
+        username: [
+          { required: true, message: "Please input Username" },
+          { min: 3, max: 14, message: "Length should be 3 to 14" },
+        ],
+        email: [
+          { required: true, message: "Please input Email" },
+          { type: "email", message: "The input is not valid E-mail!" },
+        ],
+        password: [
+          { required: true, message: "Please input Password" },
+          { min: 7, max: 14, message: "Length should be 7 to 14" },
+          { validator: validatePass, trigger: "change" },
+        ],
+        confirmPassword: [
+          { required: true, message: "Please confirm Password" },
+          { min: 7, max: 14, message: "Length should be 7 to 14" },
+          { validator: validatePass2, trigger: "change" },
+        ],
+      },
+    };
+  },
+  methods: {
+    handleSubmit(e) {
+      e.preventDefault();
+      console.log(this.form);
+    },
+  },
+};
+>>>>>>> Stashed changes
 </script>
 <style scoped></style>
