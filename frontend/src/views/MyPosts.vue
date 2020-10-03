@@ -48,7 +48,9 @@
 <script>
 // @ is an alias to /src
 
-export default {}
+export default {
+	props: ['user'],
+}
 </script>
 <style scoped>
 .cardSize {

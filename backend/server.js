@@ -203,6 +203,22 @@ app.post('/signin/', async (req, res, next) => {
 	}
 })
 
+app.get('/me', authenticateToken, async (req, res, next) => {
+	const sql = 'SELECT * FROM user WHERE id = ?'
+	const params = [req.user.id]
+
+	try {
+		const data = await db.query(sql, params)
+		delete data.rows[0].password
+		delete data.rows[0].date_created
+		res.json({
+			data: data.rows[0],
+		})
+	} catch (error) {
+		res.status(400).json({ error: error.message })
+	}
+})
+
 app.get('/myposts', authenticateToken, async (req, res, next) => {
 	const sql = 'SELECT * FROM post WHERE authorId = ? ORDER BY date_created DESC'
 	const params = [req.user.id]

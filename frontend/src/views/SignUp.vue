@@ -13,15 +13,16 @@
 			>
 			<a-row type="flex" justify="center">
 				<a-col span="20">
-					<a-form-model
+					<Error v-if="true" /><a-form-model
+						ref="signUpForm"
 						:model="form"
 						:label-col="labelCol"
 						:wrapper-col="wrapperCol"
 						:rules="rules"
 					>
 						<a-form-model-item label="Username" required prop="username" hasFeedback
-							><a-input v-model="form.username" placeholder="Username"
-						/></a-form-model-item>
+							><a-input v-model="form.username" placeholder="Username"></a-input
+						></a-form-model-item>
 						<a-form-model-item label="Email" required prop="email" hasFeedback
 							><a-input v-model="form.email" placeholder="Email" type="email"
 						/></a-form-model-item>
@@ -43,9 +44,7 @@
 							<a-button type="primary" @click="handleSubmit">
 								Create
 							</a-button>
-							<a-button style="margin-left: 10px;"
-								><router-link to="/"> Cancel</router-link>
-							</a-button>
+							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Reset </a-button>
 						</a-form-model-item>
 					</a-form-model>
 				</a-col>
@@ -55,24 +54,17 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import { signUp, signOut } from '../yolo-client'
+import Error from '../components/Error'
+
 export default {
+	props: ['user'],
+	components: {
+		Error,
+	},
 	data() {
-		let validatePass = (rule, value, callback) => {
-			if (this.form.confirmPassword !== '') {
-				this.$refs.ruleForm.validateField('checkPass')
-			} else {
-				callback()
-			}
-		}
-		let validatePass2 = (rule, value, callback) => {
-			if (value !== this.form.password) {
-				callback(new Error("Two inputs don't match!"))
-			} else {
-				callback()
-			}
-		}
 		return {
+			error: null,
 			labelCol: { span: 5 },
 			wrapperCol: { span: 14 },
 			form: {
@@ -92,22 +84,44 @@ export default {
 				],
 				password: [
 					{ required: true, message: 'Please input Password' },
-					{ min: 7, max: 14, message: 'Length should be 7 to 14' },
-					{ validator: validatePass, trigger: 'change' },
+					{ min: 8, max: 16, message: 'Length should be 8 to 16 characters' },
 				],
 				confirmPassword: [
 					{ required: true, message: 'Please confirm Password' },
-					{ min: 7, max: 14, message: 'Length should be 7 to 14' },
-					{ validator: validatePass2, trigger: 'change' },
+					{ min: 8, max: 16, message: 'Length should be 8 to 16 characters' },
+					{ validator: this.validatePass, trigger: 'change' },
 				],
 			},
 		}
 	},
 	methods: {
-		handleSubmit(e) {
-			e.preventDefault()
-			console.log(this.form)
+		resetForm() {
+			this.$refs.signUpForm.resetFields()
 		},
+		validatePass(rule, value, callback) {
+			if (value !== this.form.password) {
+				callback(new Error("Passwords don't match!"))
+			} else {
+				callback()
+			}
+		},
+		handleSubmit() {
+			this.$refs.signUpForm.validate((valid) => {
+				if (valid) {
+					signUp(this.form.username, this.form.email, this.form.password)
+						.then(() => this.$router.push('/'))
+						.catch((err) => (this.error = err))
+				} else {
+					console.log('error submit!!')
+					return false
+				}
+			})
+		},
+	},
+	created: async function() {
+		if (this.user.id) {
+			await signOut()
+		}
 	},
 }
 </script>

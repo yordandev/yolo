@@ -5,6 +5,7 @@
 			<a-button @click.prevent="clearToken">Clear token</a-button>
 			<a-button @click.prevent="signUp">Sign Up</a-button>
 			<a-button @click.prevent="signIn">Sign In</a-button>
+			<a-button @click.prevent="getMyUserDetails">Get my user details</a-button>
 			<a-button @click.prevent="getMyPosts">Get my posts</a-button>
 			<a-button @click.prevent="updateMyProfile">Update My Profile</a-button>
 			<a-button @click.prevent="deleteMyProfile">Delete My Profile</a-button>
@@ -40,6 +41,12 @@ export default {
 		signIn: () => {
 			client
 				.signIn('yordan', 'yordan123')
+				.then((res) => console.log(JSON.stringify(res.data)))
+				.catch((err) => console.error(err))
+		},
+		getMyUserDetails: () => {
+			client
+				.getMyUserDetails()
 				.then((res) => console.log(JSON.stringify(res.data)))
 				.catch((err) => console.error(err))
 		},

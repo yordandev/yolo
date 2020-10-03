@@ -65,6 +65,18 @@ module.exports.signIn = async function(username, password) {
 	}
 }
 
+module.exports.getMyUserDetails = async function() {
+	let data
+	try {
+		await axios.get('/me').then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
 module.exports.signOut = function() {
 	clearToken()
 }
