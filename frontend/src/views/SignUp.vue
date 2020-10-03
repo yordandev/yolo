@@ -100,7 +100,7 @@ export default {
 		},
 		validatePass(rule, value, callback) {
 			if (value !== this.form.password) {
-				callback(new Error("Passwords don't match!"))
+				callback("Passwords don't match!")
 			} else {
 				callback()
 			}
