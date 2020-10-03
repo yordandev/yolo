@@ -2,20 +2,20 @@
 	<a-layout id="components-layout-demo-side" style="min-height: 100vh">
 		<a-layout-sider v-model="collapsed" collapsible>
 			<div class="logo" />
-			<a-menu theme="dark" :default-selected-keys="['1']" mode="inline">
-				<a-menu-item key="1">
+			<a-menu theme="dark" :defaultSelectedKeys="[$router.currentRoute]" mode="inline">
+				<a-menu-item key="/">
 					<router-link to="/">
 						<a-icon type="home" />
 						<span>Home</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="user.id" key="2">
+				<a-menu-item v-if="user.id" key="posts">
 					<router-link to="/posts">
 						<a-icon type="robot" />
 						<span>Posts</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="user.id" key="3">
+				<a-menu-item v-if="user.id" key="create-post">
 					<router-link to="/create-post">
 						<a-icon type="plus-circle" />
 						<span>Create Post</span></router-link
@@ -47,19 +47,23 @@
 		<a-layout>
 			<a-layout-header align="end">
 				<a-space size="large">
-					<a-button type="primary" v-if="user.id">
+					<a-button type="primary" v-if="user.id" @click.prevent="signOut">
 						Sign Out
 					</a-button>
-					<a-button type="primary"><router-link to="/sign-in"> Sign In</router-link> </a-button>
-					<a-button type="primary"><router-link to="/sign-up"> Sign up</router-link> </a-button>
+					<a-button type="primary" v-if="!user.id"
+						><router-link to="/sign-in"> Sign In</router-link>
+					</a-button>
+					<a-button type="primary" v-if="!user.id"
+						><router-link to="/sign-up"> Sign up</router-link>
+					</a-button>
 				</a-space>
 			</a-layout-header>
-			<router-view :user="user"></router-view>
+			<router-view :user.sync="user"></router-view>
 		</a-layout>
 	</a-layout>
 </template>
 <script>
-import { getMyUserDetails } from './yolo-client'
+import { getMyUserDetails, signOut } from './yolo-client'
 
 export default {
 	data() {
@@ -77,6 +81,13 @@ export default {
 			.catch((err) => {
 				console.error(err)
 			})
+	},
+	methods: {
+		signOut() {
+			signOut()
+			this.user = {}
+			this.$router.push('/')
+		},
 	},
 }
 </script>

@@ -13,7 +13,8 @@
 			>
 			<a-row type="flex" justify="center">
 				<a-col span="20">
-					<Error v-if="true" /><a-form-model
+					<Error v-if="error" :error="error" />
+					<a-form-model
 						ref="signUpForm"
 						:model="form"
 						:label-col="labelCol"
@@ -109,7 +110,10 @@ export default {
 			this.$refs.signUpForm.validate((valid) => {
 				if (valid) {
 					signUp(this.form.username, this.form.email, this.form.password)
-						.then(() => this.$router.push('/'))
+						.then((res) => {
+							this.$emit('update:user', res.data)
+							this.$router.push('/')
+						})
 						.catch((err) => (this.error = err))
 				} else {
 					console.log('error submit!!')

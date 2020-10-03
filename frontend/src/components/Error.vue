@@ -2,13 +2,17 @@
 	<a-row type="flex" justify="center" class="error"
 		><a-col span="14" class="error2">
 			<a-col span="2"><a-icon type="close-circle" style="font-size: 24px;" /> </a-col
-			><a-col span="20"> <p>Error message asdasdasdsadasdasdasdsa</p></a-col></a-col
+			><a-col span="20">
+				<p>{{ error }}</p></a-col
+			></a-col
 		></a-row
 	>
 </template>
 
 <script>
-export default {}
+export default {
+	props: ['error'],
+}
 </script>
 
 <style scoped>

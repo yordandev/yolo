@@ -16,12 +16,13 @@
 			>
 			<a-row type="flex" justify="center">
 				<a-col span="20">
-					<a-form-model model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
-						<a-form-model-item label="Message"
+					<Error v-if="error" :error="error" />
+					<a-form-model ref="postForm" model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
+						<a-form-model-item label="Message" required
 							><a-input v-model="form.message" placeholder="Message" type="textarea" :rows="10"
 						/></a-form-model-item>
 						<a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
-							<a-button type="primary" @click="handleSubmit">
+							<a-button type="primary" @click.prevent="handleSubmit">
 								Create
 							</a-button>
 						</a-form-model-item>
@@ -33,23 +34,37 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import { createPost } from '../yolo-client'
+import Error from '../components/Error'
 
 export default {
+	components: {
+		Error,
+	},
 	data() {
 		return {
+			error: null,
 			labelCol: { span: 5 },
 			wrapperCol: { span: 14 },
 			form: {
 				message: '',
-				authorId: 'userId',
 			},
 		}
 	},
 	methods: {
-		handleSubmit(e) {
-			e.preventDefault()
-			console.log(this.form)
+		handleSubmit() {
+			this.$refs.signInForm.validate((valid) => {
+				if (valid) {
+					createPost(this.form.message)
+						.then(() => {
+							this.$router.push('/posts')
+						})
+						.catch((err) => (this.error = err))
+				} else {
+					console.log('error submit!!')
+					return false
+				}
+			})
 		},
 	},
 }
