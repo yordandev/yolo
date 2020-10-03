@@ -5,40 +5,10 @@
 			><a-breadcrumb-item>Account</a-breadcrumb-item><a-breadcrumb-item>My Posts</a-breadcrumb-item>
 		</a-breadcrumb>
 		<div style="padding: 0 50px">
+			<Error v-if="error" :error="error" />
 			<a-row type="flex" justify="space-around" align="middle">
 				<a-space direction="vertical">
-					<!-- card starts -->
-					<a-card :bordered="false" class="cardSize">
-						<a-row type="flex" justify="end" align="middle">
-							<!-- left column -->
-							<a-col :span="21" style="padding: 0 10px 0 0;">
-								<p style="margin: 0;">
-									Card contentCard contentCard contentCard contentCard contentCard contentCard
-									contentCard contentCard contentCard contentCard contentCard contentCard
-									contentCard contentCard content contentCard contentCard contentCard contentCard
-									contentCard contentCard contentCard contentCard contentCard contentCard content
-								</p>
-							</a-col>
-							<!-- right column -->
-							<a-col :span="3">
-								<a-space direction="vertical">
-									<a-button><a-icon type="up"/></a-button>
-									<a-button><a-icon type="down"/></a-button>
-								</a-space>
-							</a-col>
-						</a-row>
-						<a-row type="flex" justify="center" align="middle" id="buttonContainer"
-							><a-col>
-								<a-space>
-									<a-button type="primary"
-										><router-link to="/update-post">Update</router-link></a-button
-									>
-									<a-button>Delete</a-button>
-								</a-space>
-							</a-col></a-row
-						>
-					</a-card>
-					<!-- card ends -->
+					<Post :user="user" v-for="post in posts" :post="post" :key="post.id" />
 				</a-space>
 			</a-row>
 		</div>
@@ -46,10 +16,29 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import { getMyPosts } from '../yolo-client'
+import Error from '../components/Error'
+import Post from '../components/Post'
 
 export default {
 	props: ['user'],
+	components: {
+		Error,
+		Post,
+	},
+	data() {
+		return {
+			error: null,
+			posts: [],
+		}
+	},
+	created: async function() {
+		await getMyPosts()
+			.then((res) => {
+				this.posts = res.data
+			})
+			.catch((err) => (this.error = err))
+	},
 }
 </script>
 <style scoped>

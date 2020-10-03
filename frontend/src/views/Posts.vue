@@ -4,32 +4,11 @@
 			<a-breadcrumb-item><a href="../Home.vue">Home</a></a-breadcrumb-item
 			><a-breadcrumb-item>Posts</a-breadcrumb-item>
 		</a-breadcrumb>
+		<Error v-if="error" :error="error" />
 		<div style="padding: 0 50px">
 			<a-row type="flex" justify="space-around" align="middle">
-				<a-space direction="vertical">
-					<!-- card starts -->
-					<a-card :bordered="false" class="cardSize">
-						<a-row type="flex" justify="end" align="middle">
-							<!-- left column -->
-							<a-col :span="21" style="padding: 0 10px 0 0;">
-								<p style="margin: 0;">
-									Card contentCard contentCard contentCard contentCard contentCard contentCard
-									contentCard contentCard contentCard contentCard contentCard contentCard
-									contentCard contentCard content contentCard contentCard contentCard contentCard
-									contentCard contentCard contentCard contentCard contentCard contentCard content
-								</p>
-							</a-col>
-							<!-- right column -->
-							<a-col :span="3">
-								<a-space direction="vertical">
-									<a-button><a-icon type="up"/></a-button>
-									<p>0</p>
-									<a-button><a-icon type="down"/></a-button>
-								</a-space>
-							</a-col>
-						</a-row>
-					</a-card>
-					<!-- card ends -->
+				<a-space direction="vertical" size="large">
+					<Post :user="user" v-for="post in posts" :post="post" :key="post.id" />
 				</a-space>
 			</a-row>
 		</div>
@@ -37,9 +16,30 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import { getPosts } from '../yolo-client'
+import Error from '../components/Error'
+import Post from '../components/Post'
 
-export default {}
+export default {
+	props: ['user'],
+	components: {
+		Error,
+		Post,
+	},
+	data() {
+		return {
+			error: null,
+			posts: [],
+		}
+	},
+	created: async function() {
+		await getPosts()
+			.then((res) => {
+				this.posts = res.data
+			})
+			.catch((err) => (this.error = err))
+	},
+}
 </script>
 <style scoped>
 .cardSize {

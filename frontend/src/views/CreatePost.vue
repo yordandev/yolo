@@ -53,7 +53,7 @@ export default {
 	},
 	methods: {
 		handleSubmit() {
-			this.$refs.signInForm.validate((valid) => {
+			this.$refs.postForm.validate((valid) => {
 				if (valid) {
 					createPost(this.form.message)
 						.then(() => {

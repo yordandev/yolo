@@ -185,7 +185,7 @@ module.exports.upvotePost = async function(id) {
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		throw err.response.data.error
 	}
 }
 
@@ -197,6 +197,6 @@ module.exports.downvotePost = async function(id) {
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		throw err.response.data.error
 	}
 }

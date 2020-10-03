@@ -2,14 +2,14 @@
 	<a-layout id="components-layout-demo-side" style="min-height: 100vh">
 		<a-layout-sider v-model="collapsed" collapsible>
 			<div class="logo" />
-			<a-menu theme="dark" :defaultSelectedKeys="[$router.currentRoute]" mode="inline">
+			<a-menu theme="dark" :defaultSelectedKeys="[$router.currentRoute.path]" mode="inline">
 				<a-menu-item key="/">
 					<router-link to="/">
 						<a-icon type="home" />
 						<span>Home</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="user.id" key="posts">
+				<a-menu-item v-if="user.id" key="/posts">
 					<router-link to="/posts">
 						<a-icon type="robot" />
 						<span>Posts</span></router-link
@@ -23,20 +23,20 @@
 				</a-menu-item>
 				<a-sub-menu v-if="user.id" key="sub1">
 					<span slot="title"><a-icon type="user" /><span>Account</span></span>
-					<a-menu-item key="4">
+					<a-menu-item key="my-profile">
 						<router-link to="/my-profile"> My Profile</router-link>
 					</a-menu-item>
-					<a-menu-item key="5">
+					<a-menu-item key="my-posts">
 						<router-link to="/my-posts"> My Posts</router-link>
 					</a-menu-item>
 				</a-sub-menu>
-				<a-menu-item v-if="!user.id" key="7">
+				<a-menu-item v-if="!user.id" key="sign-in">
 					<router-link to="/sign-in">
 						<a-icon type="login" />
 						<span>Sign In</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="!user.id" key="6">
+				<a-menu-item v-if="!user.id" key="sign-up">
 					<router-link to="/sign-up">
 						<a-icon type="user-add" />
 						<span>Sign Up</span></router-link
@@ -75,7 +75,6 @@ export default {
 	created: async function() {
 		await getMyUserDetails()
 			.then((res) => {
-				console.log(res.data)
 				this.user = res.data
 			})
 			.catch((err) => {
