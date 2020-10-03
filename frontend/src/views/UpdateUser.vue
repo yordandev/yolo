@@ -14,7 +14,7 @@
       <a-row type="flex" justify="center">
         <a-col span="20">
           <a-form-model
-            model="form"
+            :model="form"
             :label-col="labelCol"
             :wrapper-col="wrapperCol"
             :rules="rules"
@@ -61,6 +61,14 @@
 export default {
   data() {
     return {
+      labelCol: { span: 5 },
+      wrapperCol: { span: 14 },
+      form: {
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      },
       rules: {
         username: [
           { required: true, message: "Please input Username" },
