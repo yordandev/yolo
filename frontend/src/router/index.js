@@ -8,7 +8,8 @@ import SignUp from "../views/SignUp";
 import SignIn from "../views/SignIn";
 import CreatePost from "../views/CreatePost";
 import UpdatePost from "../views/UpdatePost";
-import Test from '../views/Test.vue'
+import UpdateUser from "../views/UpdateUser";
+import Test from "../views/Test.vue";
 
 Vue.use(VueRouter);
 
@@ -52,6 +53,11 @@ const routes = [
     path: "/update-post",
     name: "UpdatePost",
     component: UpdatePost,
+  },
+  {
+    path: "/update-user",
+    name: "UpdateUser",
+    component: UpdateUser,
   },
   {
     path: "/test",
