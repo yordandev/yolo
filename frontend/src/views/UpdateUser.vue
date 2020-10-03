@@ -9,7 +9,7 @@
       }"
     >
       <a-row type="flex" justify="center"
-        ><a-col><h1>Sign In</h1></a-col></a-row
+        ><a-col><h1>Update User</h1></a-col></a-row
       >
       <a-row type="flex" justify="center">
         <a-col span="20">
@@ -19,7 +19,7 @@
             :wrapper-col="wrapperCol"
             :rules="rules"
           >
-            <a-form-model-item label="Username"
+            <a-form-model-item label="Username" required hasFeedback
               ><a-input v-model="form.username" placeholder="Current Username"
             /></a-form-model-item>
             <a-form-model-item
