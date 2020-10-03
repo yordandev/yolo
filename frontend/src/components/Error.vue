@@ -1,7 +1,9 @@
 <template>
-	<a-row type="flex" justify="center" class="error">
-		<a-col span="2"><a-icon type="close-circle" style="font-size: 24px;" /> </a-col
-		><a-col span="20"> <p>Error message asdasdasdsadasdasdasdsa</p></a-col></a-row
+	<a-row type="flex" justify="center" class="error"
+		><a-col span="14" class="error2">
+			<a-col span="2"><a-icon type="close-circle" style="font-size: 24px;" /> </a-col
+			><a-col span="20"> <p>Error message asdasdasdsadasdasdasdsa</p></a-col></a-col
+		></a-row
 	>
 </template>
 
@@ -12,12 +14,13 @@ export default {}
 <style scoped>
 .error {
 	color: white;
-	width: 40vw;
 	display: flex;
-	background-color: #ff5252;
 	align-items: center;
 	margin: 0 auto 20px auto;
-	padding: 10px 0;
+}
+.error2 {
+	background-color: #ff5252;
+	padding: 10px;
 }
 p {
 	margin: 0;
