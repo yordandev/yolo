@@ -73,7 +73,8 @@ module.exports.getMyUserDetails = async function() {
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		console.log(err)
+		throw err.response.data.error
 	}
 }
 
@@ -141,6 +142,18 @@ module.exports.getPosts = async function() {
 	}
 }
 
+module.exports.getPost = async function(id) {
+	let data
+	try {
+		await axios.get(`/posts/${id}`).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err.message
+	}
+}
+
 module.exports.createPost = async function(message) {
 	let data
 	try {
@@ -157,11 +170,12 @@ module.exports.updatePost = async function(id, message) {
 	let data
 	try {
 		await axios.patch(`/posts/${id}`, { message: message }).then((res) => {
-			data = res.data
+			data = res.data.message
 		})
 		return data
 	} catch (err) {
-		throw err.message
+		console.log(err.response)
+		throw err.response.data.error
 	}
 }
 

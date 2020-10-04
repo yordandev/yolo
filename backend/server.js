@@ -66,7 +66,7 @@ const authenticateToken = (req, res, next) => {
 		if (userPoints.rows[0].life_points <= 0) {
 			await db.query(insertIntoBlacklistSql, user.email)
 			await db.query(deleteUserSql, params)
-			res.json({
+			res.status(400).json({
 				message:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
 			})
@@ -121,7 +121,8 @@ app.post('/signup/', async (req, res, next) => {
 
 	const blacklistedCheck = await db.query(blacklistedEmailCheckSql, data.email)
 	if (blacklistedCheck.rows.length) {
-		res.status(403).json({ error: 'Your email is blacklisted' })
+		console.log('Your email is blacklisted')
+		res.status(400).json({ error: 'Your email is blacklisted' })
 		return
 	}
 	db.run(sql, params, function (err, result) {
@@ -181,8 +182,8 @@ app.post('/signin/', async (req, res, next) => {
 		if (userData.life_points <= 0) {
 			await db.query(deleteUserSql, userData.id)
 			await db.query(insertIntoBlacklistSql, userData.email)
-			res.json({
-				message:
+			res.status(400).json({
+				error:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
 			})
 			return
@@ -303,6 +304,24 @@ app.get('/posts', authenticateToken, (req, res, next) => {
 	})
 })
 
+app.get('/posts/:id', authenticateToken, (req, res, next) => {
+	const sql = 'SELECT * FROM post WHERE id = ?'
+	const params = [req.params.id]
+	db.get(sql, params, (err, row) => {
+		if (err) {
+			res.status(400).json({ error: err.message })
+			return
+		}
+		delete row.date_created
+		delete row.authorId
+		delete row.points
+		delete row.id
+		res.json({
+			data: row,
+		})
+	})
+})
+
 app.post('/posts/', authenticateToken, (req, res, next) => {
 	let errors = []
 	if (!req.body.message) {
@@ -350,7 +369,7 @@ app.patch('/posts/:id', authenticateToken, (req, res, next) => {
 			return
 		}
 		if (Number(req.user.id) !== Number(row.authorId)) {
-			res.status(403).json({ message: 'You can only update your own posts.' })
+			res.status(400).json({ error: 'You can only update your own posts.' })
 			return
 		}
 		db.run(updatePostSql, updatePostParams, function (err, result) {
@@ -359,7 +378,7 @@ app.patch('/posts/:id', authenticateToken, (req, res, next) => {
 				return
 			}
 			res.json({
-				data: data,
+				message: 'Success!',
 			})
 		})
 	})

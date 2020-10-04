@@ -28,6 +28,10 @@
 </template>
 
 <script>
-export default {}
+export default {
+	mounted: function() {
+		this.$emit('update:selectedKeys', [this.$router.currentRoute.path])
+	},
+}
 </script>
 <style scoped></style>

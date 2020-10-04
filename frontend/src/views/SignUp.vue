@@ -45,7 +45,7 @@
 							<a-button type="primary" @click="handleSubmit">
 								Create
 							</a-button>
-							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Reset </a-button>
+							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Clear</a-button>
 						</a-form-model-item>
 					</a-form-model>
 				</a-col>
@@ -90,10 +90,13 @@ export default {
 				confirmPassword: [
 					{ required: true, message: 'Please confirm Password' },
 					{ min: 8, max: 16, message: 'Length should be 8 to 16 characters' },
-					{ validator: this.validatePass, trigger: 'change' },
+					{ validator: this.validatePass, trigger: ['change', 'blur'] },
 				],
 			},
 		}
+	},
+	mounted: function() {
+		this.$emit('update:selectedKeys', [this.$router.currentRoute.path])
 	},
 	methods: {
 		resetForm() {
@@ -114,7 +117,12 @@ export default {
 							this.$emit('update:user', res.data)
 							this.$router.push('/')
 						})
-						.catch((err) => (this.error = err))
+						.catch((err) => {
+							if (err === 'Your email is blacklisted') {
+								this.$refs.signUpForm.resetFields()
+							}
+							this.error = err
+						})
 				} else {
 					console.log('error submit!!')
 					return false

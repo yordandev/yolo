@@ -2,7 +2,12 @@
 	<a-layout id="components-layout-demo-side" style="min-height: 100vh">
 		<a-layout-sider v-model="collapsed" collapsible>
 			<div class="logo" />
-			<a-menu theme="dark" :defaultSelectedKeys="[$router.currentRoute.path]" mode="inline">
+			<a-menu
+				theme="dark"
+				:selectedKeys="selectedKeys"
+				:defaultSelectedKeys="[$router.currentRoute.path]"
+				mode="inline"
+			>
 				<a-menu-item key="/">
 					<router-link to="/">
 						<a-icon type="home" />
@@ -15,7 +20,7 @@
 						<span>Posts</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="user.id" key="create-post">
+				<a-menu-item v-if="user.id" key="/create-post">
 					<router-link to="/create-post">
 						<a-icon type="plus-circle" />
 						<span>Create Post</span></router-link
@@ -23,20 +28,20 @@
 				</a-menu-item>
 				<a-sub-menu v-if="user.id" key="sub1">
 					<span slot="title"><a-icon type="user" /><span>Account</span></span>
-					<a-menu-item key="my-profile">
+					<a-menu-item key="/my-profile">
 						<router-link to="/my-profile"> My Profile</router-link>
 					</a-menu-item>
-					<a-menu-item key="my-posts">
+					<a-menu-item key="/my-posts">
 						<router-link to="/my-posts"> My Posts</router-link>
 					</a-menu-item>
 				</a-sub-menu>
-				<a-menu-item v-if="!user.id" key="sign-in">
+				<a-menu-item v-if="!user.id" key="/sign-in">
 					<router-link to="/sign-in">
 						<a-icon type="login" />
 						<span>Sign In</span></router-link
 					>
 				</a-menu-item>
-				<a-menu-item v-if="!user.id" key="sign-up">
+				<a-menu-item v-if="!user.id" key="/sign-up">
 					<router-link to="/sign-up">
 						<a-icon type="user-add" />
 						<span>Sign Up</span></router-link
@@ -51,14 +56,14 @@
 						Sign Out
 					</a-button>
 					<a-button type="primary" v-if="!user.id"
-						><router-link to="/sign-in"> Sign In</router-link>
+						><router-link to="/sign-in">Sign In</router-link>
 					</a-button>
 					<a-button type="primary" v-if="!user.id"
-						><router-link to="/sign-up"> Sign up</router-link>
+						><router-link to="/sign-up">Sign up</router-link>
 					</a-button>
 				</a-space>
 			</a-layout-header>
-			<router-view :user.sync="user"></router-view>
+			<router-view :user.sync="user" :selectedKeys.sync="selectedKeys"></router-view>
 		</a-layout>
 	</a-layout>
 </template>
@@ -70,15 +75,21 @@ export default {
 		return {
 			user: {},
 			collapsed: false,
+			selectedKeys: [],
 		}
 	},
 	created: async function() {
 		await getMyUserDetails()
 			.then((res) => {
 				this.user = res.data
+				if (res.data.life_points === 0) {
+					signOut()
+					this.user = {}
+				}
 			})
 			.catch((err) => {
 				console.error(err)
+				this.user = {}
 			})
 	},
 	methods: {

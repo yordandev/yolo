@@ -35,7 +35,7 @@
 							<a-button type="primary" @click.prevent="handleSubmit">
 								Sign In
 							</a-button>
-							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Reset </a-button>
+							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Clear</a-button>
 						</a-form-model-item>
 					</a-form-model>
 				</a-col>
@@ -73,6 +73,9 @@ export default {
 				],
 			},
 		}
+	},
+	mounted: function() {
+		this.$emit('update:selectedKeys', [this.$router.currentRoute.path])
 	},
 	methods: {
 		resetForm() {

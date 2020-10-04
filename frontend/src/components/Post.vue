@@ -28,7 +28,11 @@
 			id="buttonContainer"
 			><a-col>
 				<a-space>
-					<a-button type="primary"><router-link to="/update-post">Update</router-link></a-button>
+					<a-button type="primary"
+						><router-link :to="{ name: 'UpdatePost', params: { id: post.id } }"
+							>Update</router-link
+						></a-button
+					>
 					<a-button @click.prevent="deletePost">Delete</a-button>
 				</a-space>
 			</a-col></a-row
@@ -38,6 +42,7 @@
 
 <script>
 import { upvotePost, downvotePost, deletePost } from '../yolo-client'
+
 export default {
 	props: ['post', 'user'],
 	methods: {
@@ -47,6 +52,7 @@ export default {
 					this.$notification['success']({
 						message: res,
 					})
+					this.$emit('upvotePost', this.post.id)
 				})
 				.catch((err) => {
 					this.$notification['error']({
@@ -60,6 +66,7 @@ export default {
 					this.$notification['success']({
 						message: res,
 					})
+					this.$emit('downvotePost', this.post.id)
 				})
 				.catch((err) => {
 					this.$notification['error']({
@@ -73,7 +80,7 @@ export default {
 					this.$notification['success']({
 						message: res,
 					})
-					this.post = null
+					this.$emit('deletePost', this.post.id)
 				})
 				.catch((err) => {
 					this.$notification['error']({

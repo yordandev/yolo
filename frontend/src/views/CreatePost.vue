@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { createPost } from '../yolo-client'
+import { createPost, getMyUserDetails } from '../yolo-client'
 import Error from '../components/Error'
 
 export default {
@@ -57,7 +57,7 @@ export default {
 				if (valid) {
 					createPost(this.form.message)
 						.then(() => {
-							this.$router.push('/posts')
+							this.$router.push('/my-posts')
 						})
 						.catch((err) => (this.error = err))
 				} else {
@@ -66,6 +66,18 @@ export default {
 				}
 			})
 		},
+	},
+	mounted: async function() {
+		this.$emit('update:selectedKeys', [this.$router.currentRoute.path])
+		await getMyUserDetails()
+			.then((res) => {
+				this.$emit('update:user', res.data)
+			})
+			.catch((err) => {
+				console.error(err)
+				this.$emit('update:user', {})
+				this.$router.push('/')
+			})
 	},
 }
 </script>

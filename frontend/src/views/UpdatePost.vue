@@ -18,14 +18,10 @@
 				<a-col span="20">
 					<a-form-model model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
 						<a-form-model-item label="Message"
-							><a-input
-								v-model="form.message"
-								placeholder="Message  as already written"
-								type="textarea"
-								:rows="10"
+							><a-input v-model="form.message" type="textarea" :rows="10"
 						/></a-form-model-item>
 						<a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
-							<a-button type="primary" @click="handleSubmit">
+							<a-button type="primary" @click.prevent="handleSubmit">
 								Update
 							</a-button>
 							<a-button style="margin-left: 10px;"
@@ -40,7 +36,7 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import { getMyUserDetails, getPost, updatePost } from '../yolo-client'
 
 export default {
 	data() {
@@ -49,15 +45,42 @@ export default {
 			wrapperCol: { span: 14 },
 			form: {
 				message: '',
-				authorId: 'userId',
 			},
 		}
 	},
 	methods: {
-		handleSubmit(e) {
-			e.preventDefault()
-			console.log(this.form)
+		handleSubmit() {
+			updatePost(this.$route.params.id, this.form.message)
+				.then((res) =>
+					this.$notification['success']({
+						message: res,
+					})
+				)
+				.catch((err) =>
+					this.$notification['error']({
+						message: err,
+					})
+				)
 		},
+	},
+	mounted: async function() {
+		this.$emit('update:selectedKeys', [this.$router.currentRoute.path])
+		await getMyUserDetails()
+			.then((res) => {
+				this.$emit('update:user', res.data)
+			})
+			.catch((err) => {
+				console.error(err)
+				this.$emit('update:user', {})
+				this.$router.push('/')
+			})
+		await getPost(this.$route.params.id)
+			.then((res) => {
+				this.form.message = res.data.message
+			})
+			.catch((err) => {
+				console.error(err)
+			})
 	},
 }
 </script>

@@ -50,7 +50,7 @@ const routes = [
     component: CreatePost,
   },
   {
-    path: "/update-post",
+    path: "/update-post/:id",
     name: "UpdatePost",
     component: UpdatePost,
   },
