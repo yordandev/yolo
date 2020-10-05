@@ -16,6 +16,7 @@ function createConnection() {
 		googleConfig.redirect
 	)
 }
+
 const defaultScope = [
 	'https://www.googleapis.com/auth/userinfo.email',
 	'https://www.googleapis.com/auth/userinfo.profile',
@@ -39,10 +40,6 @@ function getConnectionUrl(auth) {
 		prompt: 'consent',
 		scope: defaultScope,
 	})
-}
-
-function getGooglePlusApi(auth) {
-	return google.plus({ version: 'v1', auth })
 }
 
 function getGooglePeopleApi(auth) {

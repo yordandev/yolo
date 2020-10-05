@@ -47,6 +47,12 @@
 							</a-button>
 							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Clear</a-button>
 						</a-form-model-item>
+						<a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
+							<strong>OR</strong>
+						</a-form-model-item>
+						<a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
+							<a-button :href="googleUrl">Sign up with Google</a-button>
+						</a-form-model-item>
 					</a-form-model>
 				</a-col>
 			</a-row>
@@ -55,7 +61,7 @@
 </template>
 
 <script>
-import { signUp, signOut } from '../yolo-client'
+import { signUp, signOut, getGoogleAuthUrl } from '../yolo-client'
 import Error from '../components/Error'
 
 export default {
@@ -66,6 +72,7 @@ export default {
 	data() {
 		return {
 			error: null,
+			googleUrl: null,
 			labelCol: { span: 5 },
 			wrapperCol: { span: 14 },
 			form: {
@@ -134,6 +141,9 @@ export default {
 		if (this.user.id) {
 			await signOut()
 		}
+		await getGoogleAuthUrl()
+			.then((res) => (this.googleUrl = res))
+			.catch((err) => console.log(err))
 	},
 }
 </script>

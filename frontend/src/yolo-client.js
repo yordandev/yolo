@@ -214,7 +214,7 @@ module.exports.downvotePost = async function(id) {
 	}
 }
 
-module.exports.getGoogleSignInUrl = async function() {
+module.exports.getGoogleAuthUrl = async function() {
 	let data
 	try {
 		await axios.get('/google-url').then((res) => {
@@ -226,6 +226,14 @@ module.exports.getGoogleSignInUrl = async function() {
 	}
 }
 
-module.exports.getGoogleAcco = async function () {
-
+module.exports.getGoogleAccount = async function(code) {
+	let data
+	try {
+		await axios.post('/google-account', { code: code }).then((res) => {
+			data = res.data
+		})
+		return data
+	} catch (err) {
+		throw err
+	}
 }

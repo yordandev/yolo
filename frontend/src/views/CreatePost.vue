@@ -1,7 +1,7 @@
 <template>
 	<a-layout-content style="margin: 0 16px">
 		<a-breadcrumb style="margin: 16px 0">
-			<a-breadcrumb-item><a href="../Home.vue">Home</a></a-breadcrumb-item
+			<a-breadcrumb-item><router-link to="/">Home</router-link></a-breadcrumb-item
 			><a-breadcrumb-item>Create Post</a-breadcrumb-item></a-breadcrumb
 		>
 		<div
