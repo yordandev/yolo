@@ -87,8 +87,7 @@ export default {
 					this.user = {}
 				}
 			})
-			.catch((err) => {
-				console.error(err)
+			.catch(() => {
 				this.user = {}
 			})
 	},

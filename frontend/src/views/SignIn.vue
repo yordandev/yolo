@@ -36,6 +36,7 @@
 								Sign In
 							</a-button>
 							<a-button style="margin-left: 10px;" @click.prevent="resetForm">Clear</a-button>
+							<a-button style="margin-left: 10px;" :href="googleUrl">Sign in with Google</a-button>
 						</a-form-model-item>
 					</a-form-model>
 				</a-col>
@@ -45,7 +46,7 @@
 </template>
 
 <script>
-import { signIn, signOut } from '../yolo-client'
+import { signIn, signOut, getGoogleSignInUrl } from '../yolo-client'
 import Error from '../components/Error'
 
 export default {
@@ -56,6 +57,7 @@ export default {
 	data() {
 		return {
 			error: null,
+			googleUrl: null,
 			labelCol: { span: 5 },
 			wrapperCol: { span: 14 },
 			form: {
@@ -96,11 +98,32 @@ export default {
 				}
 			})
 		},
+		async handleGoogleSignIn() {
+			try {
+				const googleUser = await this.$gAuth.signIn()
+				if (!googleUser) {
+					return null
+				}
+				console.log('googleUser', googleUser)
+				// console.log('getId', googleUser.getId())
+				// console.log('getBasicProfile', googleUser.getBasicProfile())
+				// console.log('getAuthResponse', googleUser.getAuthResponse())
+				// console.log('getAuthResponse', this.$gAuth.GoogleAuth.currentUser.get().getAuthResponse())
+				// this.isSignIn = this.$gAuth.isAuthorized
+			} catch (error) {
+				//on fail do something
+				console.error(error)
+				return null
+			}
+		},
 	},
 	created: async function() {
 		if (this.user.id) {
 			await signOut()
 		}
+		await getGoogleSignInUrl()
+			.then((res) => (this.googleUrl = res))
+			.catch((err) => console.log(err))
 	},
 }
 </script>

@@ -7,6 +7,8 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const jwt = require('jsonwebtoken')
 const cors = require('cors')
+const googleUtil = require('./google-util')
+const rug = require('random-username-generator')
 
 const JWT_SECRET =
 	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -492,6 +494,91 @@ app.get('/posts/downvote/:id', authenticateToken, async (req, res, next) => {
 	} catch (error) {
 		res.status(400).json({ error: error.message })
 	}
+})
+
+app.get('/google-url', async (req, res, next) => {
+	const data = await googleUtil.urlGoogle()
+	res.json({ data })
+})
+
+app.post('/google-account', async (req, res, next) => {
+	const code = req.body.code
+	if (!code) {
+		res.status(400).json({ error: 'Google code not provided.' })
+		return
+	}
+	const googleUserData = await googleUtil.getGoogleAccountFromCode(code)
+	const googleEmail = googleUserData.email
+	const googleAccessToken = googleUserData.tokens.access_token
+	const username = rug.generate()
+
+	let data = {
+		username: username,
+		email: googleEmail,
+		password: md5(googleAccessToken),
+	}
+
+	const blacklistedEmailCheckSql = 'SELECT email FROM blacklisted_email WHERE email = ?'
+	const sql = 'INSERT INTO user (username, email, password) VALUES (?,?,?)'
+	const deleteUserSql = 'DELETE FROM user WHERE id = ?'
+	const insertIntoBlacklistSql = 'INSERT INTO blacklisted_email (email) VALUES (?)'
+	const params = [data.username, data.email, data.password]
+	const blacklistedCheck = await db.query(blacklistedEmailCheckSql, data.email)
+	
+	if (blacklistedCheck.rows.length) {
+		console.log('Your email is blacklisted')
+		res.status(400).json({ error: 'Your email is blacklisted' })
+		return
+	}
+	db.run(sql, params, async function (err, result) {
+		if (err) {
+			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.email') {
+				const sql = 'SELECT username, id, life_points FROM user WHERE email = ?'
+				const username = await db.query(sql, data.email)
+				const existingData = {
+					id: username.rows[0].id,
+					username: username.rows[0].username,
+					email: data.email,
+					life_points: username.rows[0].life_points,
+				}
+
+				if (existingData.life_points <= 0) {
+					await db.query(deleteUserSql, existingData.id)
+					await db.query(insertIntoBlacklistSql, existingData.email)
+					res.status(400).json({
+						error:
+							'Your account, your posts and your votes were deleted because you hit 0 life points.',
+					})
+					return
+				}
+				const token = generateAccessToken(existingData)
+				res.json({
+					data: existingData,
+					token: token,
+				})
+				return
+			}
+			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.username') {
+				res.status(400).json({ error: 'Username already taken' })
+				return
+			} else {
+				res.status(400).json({ error: err.message })
+				return
+			}
+		}
+		data.id = this.lastID
+		data.life_points = 50
+		delete data.password
+		const token = generateAccessToken({
+			id: data.id,
+			username: data.username,
+			email: data.email,
+		})
+		res.json({
+			data: data,
+			token: token,
+		})
+	})
 })
 
 // Default response for any other request

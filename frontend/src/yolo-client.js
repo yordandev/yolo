@@ -73,7 +73,6 @@ module.exports.getMyUserDetails = async function() {
 		})
 		return data
 	} catch (err) {
-		console.log(err)
 		throw err.response.data.error
 	}
 }
@@ -213,4 +212,20 @@ module.exports.downvotePost = async function(id) {
 	} catch (err) {
 		throw err.response.data.error
 	}
+}
+
+module.exports.getGoogleSignInUrl = async function() {
+	let data
+	try {
+		await axios.get('/google-url').then((res) => {
+			data = res.data.data
+		})
+		return data
+	} catch (err) {
+		throw err
+	}
+}
+
+module.exports.getGoogleAcco = async function () {
+
 }
