@@ -1,0 +1,335 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API specification"
+  },
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "User and Authentication",
+      "description": "The endpoints for the user and authentication"
+    },
+    {
+      "name": "Posts",
+      "description": "The endpoints for the posts"
+    }
+  ],
+  "schemes": ["http"],
+  "consumes": ["application/json", "application/x-www-form-urlencoded"],
+  "produces": ["application/json"],
+  "paths": {
+    "/signup": {
+      "post": {
+        "tags": ["User and Authentication"],
+        "description": "Adds new users to the database and checks that it follows the constraints from the database as well as checking if the email is blacklisted",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "username",
+            "description": "Unique username for the account",
+            "required": "true",
+            "in": "body",
+            "schema": {
+              "title": "username",
+              "type": "string",
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "example": "antonia",
+                  "description": "The username of the user"
+                }
+              }
+            }
+          },
+          {
+            "required": "true",
+            "in": "body",
+            "name": "email",
+            "description": "Unique email for the account",
+            "schema": {
+              "title": "email",
+              "type": "string",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "email@email.com",
+                  "description": "The email of the user"
+                }
+              }
+            }
+          },
+          {
+            "name": "password",
+            "description": "The password to the account",
+            "required": "true",
+            "in": "body",
+            "schema": {
+              "title": "username",
+              "type": "string",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "example": "antonia123",
+                  "description": "The password of the user"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, new user has been added to the database",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": "The id of the user, primary key"
+                },
+                "username": {
+                  "type": "string",
+                  "example": "antonia",
+                  "description": "The username of the user"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "email@email.com",
+                  "description": "The email of the user"
+                },
+                "life_points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 50,
+                  "description": "The default life points of the user"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Your email is blacklisted"
+          },
+          "400": {
+            "description": "Your email or username is already taken"
+          }
+        }
+      }
+    },
+    "/signin": {
+      "post": {
+        "tags": ["User and Authentication"],
+        "description": "Signs in the user",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "username",
+            "description": "The username of the account"
+          },
+          {
+            "name": "password",
+            "description": "The password of the account"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, user has been signed in"
+          },
+          "400": {
+            "description": "Invalid username/password or user does not exist!"
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": ["User and Authentication"],
+        "description": "Fetches user data",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success, user information has been fetched",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": "The id of the user"
+                },
+                "username": {
+                  "type": "string",
+                  "example": "antonia",
+                  "description": "The username of the user"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "email@email.com",
+                  "description": "The email of the user"
+                },
+                "life_points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 54,
+                  "description": "The life points of the user"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "An error occurd"
+          }
+        }
+      }
+    },
+    "/myposts": {
+      "get": {
+        "tags": ["User and Authentication"],
+        "description": "Fetches posts the user created",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the post"
+          },
+          {
+            "name": "message",
+            "description": "The message of the post"
+          },
+          {
+            "name": "points",
+            "description": "The points of the post"
+          },
+          {
+            "name": "date_created",
+            "description": "The date the post was created"
+          },
+          {
+            "name": "authorId",
+            "description": " Foreign key referencing the user id of the author"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, the user's posts has been fetched"
+          },
+          "400": {
+            "description": "An error occurd"
+          }
+        }
+      }
+    },
+    "/users/:id": {
+      "patch": {
+        "tags": ["User and Authentication"],
+        "description": "Updates user information",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "username",
+            "description": "New username for the user"
+          },
+          {
+            "name": "password",
+            "description": "New password for the user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, the user's information was updated"
+          },
+          "403": {
+            "description": "You can only update your own details"
+          },
+          "400": {
+            "description": "No user ID provided/ Nothing to update/ Username taken"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["User and Authentication"],
+        "description": "Deletes the user",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the user, deafult is the id of the signed in user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, the user has been deleted"
+          },
+          "403": {
+            "description": "You can only delete your own account"
+          },
+          "400": {
+            "description": "An error occured"
+          }
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "tags": ["Posts"],
+        "description": "Fetches all posts",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success, all posts was retrieved"
+          },
+          "400": {
+            "description": "An error occurd"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Posts"],
+        "description": "Creates a new post",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "message",
+            "description": "The message from the application"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, a new post was created"
+          },
+          "400": {
+            "description": "An error occurd"
+          }
+        }
+      }
+    },
+    "/posts/:id": {
+      "patch": {
+        "tags": ["Posts"],
+        "description": "Update a specific post",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "message",
+            "description": "The message from the application"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, the post was updated"
+          },
+          "400": {
+            "description": "Nothing to update"
+          },
+          "403": {
+            "description": "You can only update your own posts"
+          }
+        }
+      }
+    }
+  }
+}
