@@ -13,6 +13,10 @@
     {
       "name": "Posts",
       "description": "The endpoints for the posts"
+    },
+    {
+      "name": "Upvotes and downvotes",
+      "description": "The endpoints for the upvotes and downvotes"
     }
   ],
   "schemes": ["http"],
@@ -126,16 +130,75 @@
         "parameters": [
           {
             "name": "username",
-            "description": "The username of the account"
+            "description": "The username of the account",
+            "required": "true",
+            "in": "body",
+            "schema": {
+              "title": "username",
+              "type": "string",
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "example": "antonia",
+                  "description": "The username of the user"
+                }
+              }
+            }
           },
           {
             "name": "password",
-            "description": "The password of the account"
+            "description": "The password of the account",
+            "required": "true",
+            "in": "body",
+            "schema": {
+              "title": "password",
+              "type": "string",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "example": "antonia123",
+                  "description": "The password of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success, user has been signed in"
+            "description": "Success, user has been signed in",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": "The id of the user, primary key"
+                },
+                "username": {
+                  "type": "string",
+                  "example": "antonia",
+                  "description": "The username of the user"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "email@email.com",
+                  "description": "The email of the user"
+                },
+                "life_points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 50,
+                  "description": "The default life points of the user"
+                },
+                "token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ijk3YW56aWVyIiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWF0IjoxNjAxMzg4Mjk1LCJleHAiOjE2MDEzOTE4OTV9.XLxlRj-hJdWPFWUL1Dk_Hohr_ngBpaiZKk7HijOSe-k",
+                  "description": "The default life points of the user"
+                }
+              }
+            }
           },
           "400": {
             "description": "Invalid username/password or user does not exist!"
@@ -148,6 +211,24 @@
         "tags": ["User and Authentication"],
         "description": "Fetches user data",
         "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success, user information has been fetched",
@@ -194,28 +275,59 @@
         "parameters": [
           {
             "name": "id",
-            "description": "The id of the post"
-          },
-          {
-            "name": "message",
-            "description": "The message of the post"
-          },
-          {
-            "name": "points",
-            "description": "The points of the post"
-          },
-          {
-            "name": "date_created",
-            "description": "The date the post was created"
-          },
-          {
-            "name": "authorId",
-            "description": " Foreign key referencing the user id of the author"
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success, the user's posts has been fetched"
+            "description": "Success, the user's posts has been fetched",
+            "schema": {
+              "title": "mypost",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 23,
+                  "description": "The id of the post"
+                },
+                "message": {
+                  "type": "string",
+
+                  "example": "Hi! This is a message.",
+                  "description": "The message of the post"
+                },
+                "points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 12,
+                  "description": "The points of the post"
+                },
+                "date_created": {
+                  "type": "dateform",
+                  "example": "2020-10-05 10:06:49",
+                  "description": "The date the post was created"
+                },
+                "authorId": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": " Foreign key referencing the user id of the author"
+                }
+              }
+            }
           },
           "400": {
             "description": "An error occurd"
@@ -231,11 +343,51 @@
         "parameters": [
           {
             "name": "username",
-            "description": "New username for the user"
+            "description": "The new username of the user",
+            "in": "body",
+            "schema": {
+              "title": "username",
+              "type": "string",
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "example": "antonia2",
+                  "description": "The new username of the user"
+                }
+              }
+            }
           },
           {
             "name": "password",
-            "description": "New password for the user"
+            "description": "The new password of the user",
+            "in": "body",
+            "schema": {
+              "title": "password",
+              "type": "string",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "example": "antonia456",
+                  "description": "The new password of the user"
+                }
+              }
+            }
+          },
+          {
+            "name": "id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -257,7 +409,19 @@
         "parameters": [
           {
             "name": "id",
-            "description": "The id of the user, deafult is the id of the signed in user"
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -280,7 +444,41 @@
         "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "Success, all posts was retrieved"
+            "description": "Success, an array containing all posts was retrieved",
+            "schema": {
+              "title": "posts",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 23,
+                  "description": "The id of the post"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hi! This is a message.",
+                  "description": "The message of the post"
+                },
+                "points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 12,
+                  "description": "The points of the post"
+                },
+                "date_created": {
+                  "type": "dateform",
+                  "example": "2020-10-05 10:06:49",
+                  "description": "The date the post was created"
+                },
+                "authorId": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 8,
+                  "description": " Foreign key referencing the user id of the author"
+                }
+              }
+            }
           },
           "400": {
             "description": "An error occurd"
@@ -294,12 +492,75 @@
         "parameters": [
           {
             "name": "message",
-            "description": "The message from the application"
+            "description": "The message from the application",
+            "in": "body",
+            "required": "true",
+            "schema": {
+              "title": "message",
+              "type": "string",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Hi! This is a message.",
+                  "description": "The message"
+                }
+              }
+            }
+          },
+          {
+            "name": "id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success, a new post was created"
+            "description": "Success, a new post was created",
+            "schema": {
+              "title": "posts",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 26,
+                  "description": "The id of the post"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hi! This is a message.",
+                  "description": "The message of the post"
+                },
+                "points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 0,
+                  "description": "The points of the post"
+                },
+                "date_created": {
+                  "type": "dateform",
+                  "example": "2020-10-05 10:06:49",
+                  "description": "The date the post was created"
+                },
+                "authorId": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": " Foreign key referencing the user id of the author"
+                }
+              }
+            }
           },
           "400": {
             "description": "An error occurd"
@@ -315,18 +576,219 @@
         "parameters": [
           {
             "name": "message",
-            "description": "The message from the application"
+            "description": "The message from the application",
+            "in": "body",
+            "required": "true",
+            "schema": {
+              "title": "message",
+              "type": "string",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Hi! This is the updated message.",
+                  "description": "The message"
+                }
+              }
+            }
+          },
+          {
+            "name": "id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success, the post was updated"
+            "description": "Success, the post was updated",
+            "schema": {
+              "title": "posts",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 26,
+                  "description": "The id of the post"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hi! This is the new message.",
+                  "description": "The message of the post"
+                },
+                "points": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 0,
+                  "description": "The points of the post"
+                },
+                "date_created": {
+                  "type": "dateform",
+                  "example": "2020-10-05 10:06:49",
+                  "description": "The date the post was created"
+                },
+                "authorId": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 6,
+                  "description": " Foreign key referencing the user id of the author"
+                }
+              }
+            }
           },
           "400": {
             "description": "Nothing to update"
           },
           "403": {
             "description": "You can only update your own posts"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Posts"],
+        "description": "Delete a specific post",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, the post has been deleted"
+          },
+          "403": {
+            "description": "You can only delete your own posts"
+          },
+          "400": {
+            "description": "An error occured"
+          }
+        }
+      }
+    },
+    "/posts/upvote/:id": {
+      "get": {
+        "tags": ["Upvotes and downvotes"],
+        "description": "Upvote a post",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "user.id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
+          },
+          {
+            "name": "id",
+            "description": "The id of the post the user wish to upvote",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 24,
+                  "description": "The id of the post"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, you have upvoted a post"
+          },
+          "400": {
+            "description": "You cannot vote for yourself/ You have already voted"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      }
+    },
+    "/posts/downvote/:id": {
+      "get": {
+        "tags": ["Upvotes and downvotes"],
+        "description": "Downvote a post",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "user.id",
+            "description": "The id of the user making the request",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 6,
+                  "description": "The id of the user"
+                }
+              }
+            }
+          },
+          {
+            "name": "id",
+            "description": "The id of the post the user wish to upvote",
+            "in": "body",
+            "schema": {
+              "title": "id",
+              "type": "integer",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 24,
+                  "description": "The id of the post"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, you have downvoted a post"
+          },
+          "400": {
+            "description": "You cannot vote for yourself/ You have already voted"
+          },
+          "404": {
+            "description": "Post not found"
           }
         }
       }
