@@ -9,6 +9,8 @@ const jwt = require('jsonwebtoken')
 const cors = require('cors')
 const googleUtil = require('./google-util')
 const rug = require('random-username-generator')
+const swaggerUi = require('swagger-ui-express'),
+	swaggerDocument = require('./swagger.json')
 
 const JWT_SECRET =
 	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -36,6 +38,7 @@ app.use(morgan('tiny'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors())
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 //USER/AUTHENTICATION ENDPOINTS
 const generateAccessToken = (data) =>
