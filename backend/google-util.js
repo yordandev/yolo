@@ -66,15 +66,7 @@ module.exports.getGoogleAccountFromCode = async function (code) {
 	const auth = createConnection()
 	const data = await auth.getToken(code)
 	const tokens = data.tokens
-	auth.setCredentials(tokens)
-	const people = getGooglePeopleApi(auth)
-	const res = await people.people.get({
-		resourceName: 'people/me',
-		personFields: 'emailAddresses',
-	})
-	const email = res.data.emailAddresses[0].value
 	return {
-		email: email,
-		tokens: tokens,
+		id_token: tokens.id_token
 	}
 }

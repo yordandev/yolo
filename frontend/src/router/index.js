@@ -9,7 +9,6 @@ import SignIn from '../views/SignIn'
 import CreatePost from '../views/CreatePost'
 import UpdatePost from '../views/UpdatePost'
 import UpdateUser from '../views/UpdateUser'
-import Test from '../views/Test'
 import Callback from '../views/Callback.vue'
 
 Vue.use(VueRouter)
@@ -59,11 +58,6 @@ const routes = [
 		path: '/update-user',
 		name: 'UpdateUser',
 		component: UpdateUser,
-	},
-	{
-		path: '/test',
-		name: 'Test',
-		component: Test,
 	},
 	{
 		path: '/callback',

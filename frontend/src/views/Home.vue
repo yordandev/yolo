@@ -10,15 +10,15 @@
 		>
 			<a-row type="flex" justify="space-around" align="middle">
 				<a-col>
-					<h1>📜Welcome to YOLO!📜</h1>
+					<h1>Welcome to YOLO!</h1>
 				</a-col>
 			</a-row>
 			<a-row type="flex" justify="space-around" align="middle">
 				<a-col>
 					<p>
-						📌YOLO is a message board for anyone to use.<br />
-						Every post can be upvoted⬆️ or downvoted⬇️ by the community, which leads to an increase
-						or decrease in life-points🔋.<br />
+						YOLO is a message board for anyone to use.<br />
+						Every posts can be either upvoted (⬆️) or downvoted (⬇️) by the community, which leads
+						to an increase or decrease in your life-points🔋.<br />
 						If your life-points hits 0, your account will automatically be deleted💣.
 					</p>
 				</a-col>

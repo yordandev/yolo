@@ -65,7 +65,7 @@ export default {
 
 		await getMyPosts()
 			.then((res) => {
-				this.posts = res.data
+				this.posts = res
 			})
 			.catch((err) => (this.error = err))
 		this.postsLoaded = true

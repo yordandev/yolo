@@ -41,7 +41,12 @@
 							<strong>OR</strong>
 						</a-form-model-item>
 						<a-form-model-item :wrapper-col="{ span: 14, offset: 5 }">
-							<a-button :href="googleUrl">Sign in with Google</a-button>
+							<a-button :href="googleUrl"
+								><img
+									class="google-icon"
+									src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+								/>Sign in with Google</a-button
+							>
 						</a-form-model-item>
 					</a-form-model>
 				</a-col>
@@ -93,7 +98,7 @@ export default {
 				if (valid) {
 					signIn(this.form.username, this.form.password)
 						.then((res) => {
-							this.$emit('update:user', res.data)
+							this.$emit('update:user', res)
 							this.$router.push('/')
 						})
 						.catch((err) => (this.error = err))
@@ -114,4 +119,10 @@ export default {
 	},
 }
 </script>
-<style scoped></style>
+<style scoped>
+.google-icon {
+	margin-right: 14px;
+	width: 18px;
+	height: 18px;
+}
+</style>

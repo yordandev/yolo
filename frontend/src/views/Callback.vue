@@ -13,8 +13,7 @@ export default {
 		let data
 		await getGoogleAccount(this.$route.query.code)
 			.then((res) => {
-				console.log(res)
-				data = res.data
+				data = res
 				localStorage.setItem('access_token', res.token)
 			})
 			.catch((err) => {

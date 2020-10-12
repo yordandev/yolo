@@ -16,8 +16,6 @@ Vue.config.productionTip = false
 Vue.use(Antd)
 Vue.use(GAuth, gauthOption)
 
-
-
 new Vue({
 	router,
 	render: (h) => h(App),

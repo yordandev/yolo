@@ -14,8 +14,8 @@
 		>
 			<a-row type="flex" align="middle">
 				<a-col>
-					<h1>Hi {{ user.username }}!</h1>
-					<h3>The information here is only visible to you.</h3>
+					<h1>Hi, {{ user.username }}!</h1>
+					<p><em>The information here is only visible to you.</em></p>
 					<p>
 						Email: <strong>{{ user.email }}</strong>
 					</p>

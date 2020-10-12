@@ -4,6 +4,7 @@ const app = express()
 const db = require('./database.js')
 const md5 = require('md5')
 const bodyParser = require('body-parser')
+require('body-parser-xml')(bodyParser)
 const morgan = require('morgan')
 const jwt = require('jsonwebtoken')
 const cors = require('cors')
@@ -11,6 +12,7 @@ const googleUtil = require('./google-util')
 const rug = require('random-username-generator')
 const swaggerUi = require('swagger-ui-express'),
 	swaggerDocument = require('./swagger.json')
+const parser = require('xml2json')
 
 const JWT_SECRET =
 	Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -37,8 +39,32 @@ app.listen(PORT, () => {
 app.use(morgan('tiny'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(cors())
+app.use(
+	bodyParser.xml({
+		limit: '1MB', // Reject payload bigger than 1 MB
+		explicitArray: true,
+		normalize: true,
+	})
+)
+app.use(
+	cors({
+		origin: 'http://localhost:8081',
+		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+	})
+)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+
+const handleResponse = (req, res, status, data) => {
+	status = Number(status) || 200
+	const type = req.headers['content-type'] || req.headers['accept']
+	if (type === 'application/xml' || type === 'text/xml' || type === 'application/rss+xml') {
+		res.set('Content-Type', 'application/xml')
+		const newdata = parser.toXml(data)
+		res.status(status).send(newdata)
+	} else {
+		res.status(status).json(data)
+	}
+}
 
 //USER/AUTHENTICATION ENDPOINTS
 const generateAccessToken = (data) =>
@@ -50,12 +76,12 @@ const authenticateToken = (req, res, next) => {
 	const authHeader = req.headers['authorization']
 	const token = authHeader && authHeader.split(' ')[1]
 	if (token == null) {
-		return res.status(401).json({ error: 'You need to be authenticated!' })
+		return handleResponse(req, res, 401, { error: 'You need to be authenticated!' })
 	} // if there is no token attached to the headers
 
 	jwt.verify(token, JWT_SECRET, async (err, user) => {
 		if (err) {
-			return res.status(403).json({ error: 'You need to be authenticated!' })
+			return handleResponse(req, res, 401, { error: 'You need to be authenticated!' })
 		}
 		const sql = 'select * from user where id = ?'
 		const params = [user.id]
@@ -65,13 +91,13 @@ const authenticateToken = (req, res, next) => {
 		const userPoints = await db.query(userPointsSql, params)
 
 		if (!userPoints.rows.length) {
-			res.status(403).json({ error: 'Token invalid' })
+			handleResponse(req, res, 401, { error: 'Token invalid!' })
 			return
 		}
 		if (userPoints.rows[0].life_points <= 0) {
 			await db.query(insertIntoBlacklistSql, user.email)
 			await db.query(deleteUserSql, params)
-			res.status(400).json({
+			handleResponse(req, res, 204, {
 				message:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
 			})
@@ -80,7 +106,7 @@ const authenticateToken = (req, res, next) => {
 
 		db.get(sql, params, (err, row) => {
 			if (err) {
-				res.status(400).json({ error: err.message })
+				handleResponse(req, res, 204, { error: err.message })
 				return
 			}
 			delete row.password
@@ -92,10 +118,15 @@ const authenticateToken = (req, res, next) => {
 
 // Root endpoint
 app.get('/', authenticateToken, (req, res, next) => {
-	res.json({ message: 'uhhh, what is it you want me to do exactly?' })
+	handleResponse(req, res, 200, { message: 'uhhh, what is it you want me to do exactly?' })
 })
 
-app.post('/signup/', async (req, res, next) => {
+app.post('/signup', async (req, res, next) => {
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.username = req.body.data.username[0]
+		req.body.email = req.body.data.email[0]
+		req.body.password = req.body.data.password[0]
+	}
 	let errors = []
 	if (!req.body.username) {
 		errors.push('No username provided')
@@ -110,7 +141,7 @@ app.post('/signup/', async (req, res, next) => {
 		errors.push('No password provided')
 	}
 	if (errors.length) {
-		res.status(400).json({ error: errors.join(', ') })
+		handleResponse(req, res, 400, { error: errors.join(', ') })
 		return
 	}
 
@@ -126,21 +157,20 @@ app.post('/signup/', async (req, res, next) => {
 
 	const blacklistedCheck = await db.query(blacklistedEmailCheckSql, data.email)
 	if (blacklistedCheck.rows.length) {
-		console.log('Your email is blacklisted')
-		res.status(400).json({ error: 'Your email is blacklisted' })
+		handleResponse(req, res, 400, { error: 'Your email is blacklisted' })
 		return
 	}
 	db.run(sql, params, function (err, result) {
 		if (err) {
 			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.email') {
-				res.status(400).json({ error: 'Email already taken' })
+				handleResponse(req, res, 400, { error: 'Email already taken' })
 				return
 			}
 			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.username') {
-				res.status(400).json({ error: 'Username already taken' })
+				handleResponse(req, res, 400, { error: 'Username already taken' })
 				return
 			} else {
-				res.status(400).json({ error: err.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
 		}
@@ -152,15 +182,19 @@ app.post('/signup/', async (req, res, next) => {
 			username: data.username,
 			email: data.email,
 		})
-		res.json({
+		data.token = token
+		handleResponse(req, res, 200, {
 			data: data,
-			token: token,
 		})
 	})
 })
 
-app.post('/signin/', async (req, res, next) => {
+app.post('/signin', async (req, res, next) => {
 	let errors = []
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.username = req.body.data.username[0]
+		req.body.password = req.body.data.password[0]
+	}
 	if (!req.body.username) {
 		errors.push('No username provided')
 	}
@@ -168,7 +202,7 @@ app.post('/signin/', async (req, res, next) => {
 		errors.push('No password provided')
 	}
 	if (errors.length) {
-		res.status(400).json({ error: errors.join(', ') })
+		handleResponse(req, res, 400, { error: errors.join(', ') })
 		return
 	}
 
@@ -180,14 +214,14 @@ app.post('/signin/', async (req, res, next) => {
 	try {
 		const data = await db.query(signInSql, signInParams)
 		if (!data.rows.length) {
-			res.status(400).json({ error: 'Invalid username/password or user does not exist!' })
+			handleResponse(req, res, 400, { error: 'Invalid username/password or user does not exist!' })
 			return
 		}
 		const userData = data.rows[0]
 		if (userData.life_points <= 0) {
 			await db.query(deleteUserSql, userData.id)
 			await db.query(insertIntoBlacklistSql, userData.email)
-			res.status(400).json({
+			handleResponse(req, res, 400, {
 				error:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
 			})
@@ -200,12 +234,10 @@ app.post('/signin/', async (req, res, next) => {
 			username: userData.username,
 			email: userData.email,
 		})
-		res.json({
-			data: userData,
-			token: token,
-		})
+		userData.token = token
+		handleResponse(req, res, 200, userData)
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		handleResponse(req, res, 400, { error: error.message })
 	}
 })
 
@@ -217,11 +249,9 @@ app.get('/me', authenticateToken, async (req, res, next) => {
 		const data = await db.query(sql, params)
 		delete data.rows[0].password
 		delete data.rows[0].date_created
-		res.json({
-			data: data.rows[0],
-		})
+		handleResponse(req, res, 200, { data: data.rows[0] })
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		handleResponse(req, res, 400, { error: error.message })
 	}
 })
 
@@ -231,21 +261,23 @@ app.get('/myposts', authenticateToken, async (req, res, next) => {
 
 	try {
 		const postsData = await db.query(sql, params)
-		res.json({
-			data: postsData.rows,
-		})
+		handleResponse(req, res, 200, { data: postsData.rows })
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		handleResponse(req, res, 400, { error: error.message })
 	}
 })
 
 app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 	if (!req.params.id) {
-		res.status(400).json({ error: 'No user ID provided.' })
+		handleResponse(req, res, 400, { error: 'No user ID provided.' })
 		return
 	}
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.username = req.body.data.username[0]
+		req.body.password = req.body.data.password[0]
+	}
 	if (!req.body.username && !req.body.password) {
-		res.status(400).json({ error: 'Nothing to update' })
+		handleResponse(req, res, 400, { error: 'Nothing to update' })
 		return
 	}
 
@@ -261,59 +293,62 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 
 	//Prevent user from updating other user's details
 	if (Number(req.params.id) !== req.user.id) {
-		res.status(403).json({ message: 'You can only update your own details.' })
+		handleResponse(req, res, 403, { message: 'You can only update your own details.' })
 		return
 	}
 	db.run(sql, params, function (err, result) {
 		if (err) {
 			if (data.username) {
-				res.status(400).json({ error: 'Username taken' })
+				handleResponse(req, res, 400, { error: 'Username taken' })
 				return
 			} else {
-				res.status(400).json({ error: err.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
 			return
 		}
-		res.json({ message: 'Success' })
+		handleResponse(req, res, 200, { message: 'Success' })
 	})
 })
 
 app.delete('/users/:id', authenticateToken, (req, res, next) => {
 	const sql = `DELETE FROM user WHERE id = ?`
 	if (Number(req.params.id) !== req.user.id) {
-		res.status(403).json({ message: 'You can only delete your own account.' })
+		handleResponse(req, res, 403, { message: 'You can only delete your own account.' })
 		return
 	}
 	db.run(sql, req.params.id, function (err, result) {
 		if (err) {
-			res.status(400).json({ error: res.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
-		res.json({ message: 'Success' })
+		handleResponse(req, res, 200, { message: 'Success' })
 	})
 })
 
 app.get('/google-url', async (req, res, next) => {
 	const data = await googleUtil.urlGoogle()
-	res.json({ data })
+	handleResponse(req, res, 200, { data })
 })
 
 app.post('/google-account', async (req, res, next) => {
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.code = req.body.data.code[0]
+	}
 	const code = req.body.code
 	if (!code) {
-		res.status(400).json({ error: 'Google code not provided.' })
+		handleResponse(req, res, 400, { error: 'Google code not provided.' })
 		return
 	}
-	const googleUserData = await googleUtil.getGoogleAccountFromCode(code)
-	const googleEmail = googleUserData.email
-	const googleAccessToken = googleUserData.tokens.access_token
+	const googleData = await googleUtil.getGoogleAccountFromCode(code)
+	const googleIdToken = googleData.id_token
+	const userData = await jwt.decode(googleIdToken)
 	const username = rug.generate()
 
 	let data = {
 		username: username,
-		email: googleEmail,
-		password: md5(googleAccessToken),
+		email: userData.email,
+		password: md5(googleIdToken + Math.random().toString(36)),
 	}
 
 	const blacklistedEmailCheckSql = 'SELECT email FROM blacklisted_email WHERE email = ?'
@@ -324,8 +359,7 @@ app.post('/google-account', async (req, res, next) => {
 	const blacklistedCheck = await db.query(blacklistedEmailCheckSql, data.email)
 
 	if (blacklistedCheck.rows.length) {
-		console.log('Your email is blacklisted')
-		res.status(400).json({ error: 'Your email is blacklisted' })
+		handleResponse(req, res, 400, { error: 'Your email is blacklisted' })
 		return
 	}
 	db.run(sql, params, async function (err, result) {
@@ -339,28 +373,25 @@ app.post('/google-account', async (req, res, next) => {
 					email: data.email,
 					life_points: username.rows[0].life_points,
 				}
-
 				if (existingData.life_points <= 0) {
 					await db.query(deleteUserSql, existingData.id)
 					await db.query(insertIntoBlacklistSql, existingData.email)
-					res.status(400).json({
+					handleResponse(req, res, 400, {
 						error:
 							'Your account, your posts and your votes were deleted because you hit 0 life points.',
 					})
 					return
 				}
 				const token = generateAccessToken(existingData)
-				res.json({
-					data: existingData,
-					token: token,
-				})
+				existingData.token = token
+				handleResponse(req, res, 200, { data: existingData })
 				return
 			}
 			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.username') {
-				res.status(400).json({ error: 'Username already taken' })
+				handleResponse(req, res, 400, { error: 'Username already taken' })
 				return
 			} else {
-				res.status(400).json({ error: err.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
 		}
@@ -372,10 +403,8 @@ app.post('/google-account', async (req, res, next) => {
 			username: data.username,
 			email: data.email,
 		})
-		res.json({
-			data: data,
-			token: token,
-		})
+		data.token = token
+		handleResponse(req, res, 200, { data: data })
 	})
 })
 
@@ -385,12 +414,10 @@ app.get('/posts', authenticateToken, (req, res, next) => {
 	const params = []
 	db.all(sql, params, (err, rows) => {
 		if (err) {
-			res.status(400).json({ error: err.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
-		res.json({
-			data: rows,
-		})
+		handleResponse(req, res, 200, { data: rows })
 	})
 })
 
@@ -399,26 +426,27 @@ app.get('/posts/:id', authenticateToken, (req, res, next) => {
 	const params = [req.params.id]
 	db.get(sql, params, (err, row) => {
 		if (err) {
-			res.status(400).json({ error: err.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
 		delete row.date_created
 		delete row.authorId
 		delete row.points
 		delete row.id
-		res.json({
-			data: row,
-		})
+		handleResponse(req, res, 200, { data: row })
 	})
 })
 
-app.post('/posts/', authenticateToken, (req, res, next) => {
+app.post('/posts', authenticateToken, (req, res, next) => {
 	let errors = []
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.message = req.body.data.message[0]
+	}
 	if (!req.body.message) {
 		errors.push('No message provided')
 	}
 	if (errors.length) {
-		res.status(400).json({ error: errors.join(',') })
+		handleResponse(req, res, 400, { error: errors.join(', ') })
 		return
 	}
 	let data = {
@@ -429,19 +457,20 @@ app.post('/posts/', authenticateToken, (req, res, next) => {
 	const params = [data.message, req.user.id]
 	db.run(sql, params, function (err, result) {
 		if (err) {
-			res.status(400).json({ error: err.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
 		data.id = this.lastID
-		res.json({
-			data: data,
-		})
+		handleResponse(req, res, 200, { data: data })
 	})
 })
 
 app.patch('/posts/:id', authenticateToken, (req, res, next) => {
+	if (req.is('application/xml' || 'text/xml' || 'application/rss+xml')) {
+		req.body.message = req.body.data.message[0]
+	}
 	if (!req.body.message) {
-		res.status(400).json({ error: 'Nothing to update' })
+		handleResponse(req, res, 400, { error: 'Nothing to update' })
 		return
 	}
 	const data = {
@@ -455,21 +484,19 @@ app.patch('/posts/:id', authenticateToken, (req, res, next) => {
 	const updatePostParams = [data.message, req.params.id]
 	db.get(getPostAuthorIdSql, getPostAuthorIdParams, function (err, row) {
 		if (err) {
-			res.status(400).json({ error: res.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
 		if (Number(req.user.id) !== Number(row.authorId)) {
-			res.status(400).json({ error: 'You can only update your own posts.' })
+			handleResponse(req, res, 400, { error: 'You can only update your own posts.' })
 			return
 		}
 		db.run(updatePostSql, updatePostParams, function (err, result) {
 			if (err) {
-				res.status(400).json({ error: err.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
-			res.json({
-				message: 'Success!',
-			})
+			handleResponse(req, res, 200, { message: 'Success' })
 		})
 	})
 })
@@ -481,23 +508,23 @@ app.delete('/posts/:id', authenticateToken, (req, res, next) => {
 
 	db.get(getPostAuthorIdSql, getPostAuthorIdParams, function (err, row) {
 		if (err) {
-			res.status(400).json({ error: res.message })
+			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
 		if (!row) {
-			res.status(404).json({ error: 'Post not found' })
+			handleResponse(req, res, 404, { error: 'Post not found' })
 			return
 		}
 		if (Number(req.user.id) !== Number(row.authorId)) {
-			res.status(403).json({ message: 'You can only delete your own posts.' })
+			handleResponse(req, res, 403, { message: 'You can only delete your own posts.' })
 			return
 		}
 		db.run(deletePostSql, req.params.id, function (err, result) {
 			if (err) {
-				res.status(400).json({ error: res.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
-			res.json({ message: 'Deleted' })
+			handleResponse(req, res, 204, { message: 'Deleted' })
 		})
 	})
 })
@@ -516,30 +543,28 @@ app.get('/posts/upvote/:id', authenticateToken, async (req, res, next) => {
 		const postExists = await db.query(postExistsCheck, req.params.id)
 		let authorId
 		if (!postExists.rows.length) {
-			res.status(404).json({ error: 'Post not found' })
+			handleResponse(req, res, 404, { error: 'Post not found' })
 			return
 		} else {
 			authorId = postExists.rows[0].authorId
 		}
 
 		if (authorId === req.user.id) {
-			res.status(400).json({ error: 'You cannot vote for yourself' })
+			handleResponse(req, res, 400, { error: 'You cannot vote for yourself.' })
 			return
 		}
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
-			res.status(400).json({
-				error: 'You have already voted',
-			})
+			handleResponse(req, res, 400, { error: 'You have already voted!' })
 			return
 		}
 		await db.query(voteSql, voteParams)
 		await db.query(upvoteSql, req.params.id)
 		await db.query(upvoteUserSql, authorId)
-		res.json({ message: 'Upvoted!' })
+		handleResponse(req, res, 200, { message: 'Upvoted!' })
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		handleResponse(req, res, 400, { error: error.message })
 	}
 })
 
@@ -557,34 +582,32 @@ app.get('/posts/downvote/:id', authenticateToken, async (req, res, next) => {
 		const postExists = await db.query(postExistsCheck, req.params.id)
 		let authorId
 		if (!postExists.rows.length) {
-			res.status(404).json({ error: 'Post not found' })
+			handleResponse(req, res, 404, { error: 'Post not found' })
 			return
 		} else {
 			authorId = postExists.rows[0].authorId
 		}
 
 		if (authorId === req.user.id) {
-			res.status(400).json({ error: 'You cannot vote for yourself' })
+			handleResponse(req, res, 400, { error: 'You cannot vote for yourself.' })
 			return
 		}
 
 		const voteCheck = await db.query(votedCheckSql, votedCheckParams)
 		if (voteCheck.rows.length) {
-			res.status(400).json({
-				error: 'You have already voted',
-			})
+			handleResponse(req, res, 400, { error: 'You have already voted!' })
 			return
 		}
 		await db.query(voteSql, voteParams)
 		await db.query(downvoteSql, req.params.id)
 		await db.query(downvoteUserSql, authorId)
-		res.json({ message: 'Downvoted!' })
+		handleResponse(req, res, 200, { message: 'Downvoted!' })
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		handleResponse(req, res, 400, { error: error.message })
 	}
 })
 
 // Default response for any other request
 app.use((req, res) => {
-	res.status(404).send("Sorry can't find that!")
+	handleResponse(req, res, 404, { error: 'Sorry cannot find that!' })
 })

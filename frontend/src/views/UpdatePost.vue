@@ -16,7 +16,7 @@
 			>
 			<a-row type="flex" justify="center">
 				<a-col span="20">
-					<a-form-model model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
+					<a-form-model :model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
 						<a-form-model-item label="Message"
 							><a-input v-model="form.message" type="textarea" :rows="10"
 						/></a-form-model-item>
@@ -51,11 +51,12 @@ export default {
 	methods: {
 		handleSubmit() {
 			updatePost(this.$route.params.id, this.form.message)
-				.then((res) =>
+				.then((res) => {
 					this.$notification['success']({
 						message: res,
 					})
-				)
+					this.$router.push('/my-posts')
+				})
 				.catch((err) =>
 					this.$notification['error']({
 						message: err,

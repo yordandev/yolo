@@ -25,8 +25,11 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
 	(config) => config,
 	async (error) => {
-		if (error.response.status === 403) {
+		if (error.response.status === 401) {
 			return Promise.reject(new Error('Unauthorized'))
+		}
+		if (error.response.status === 403) {
+			return Promise.reject(new Error('Forbidden'))
 		}
 		if (error.response.status === 404) {
 			return Promise.reject(new Error('Resource not found'))
@@ -43,7 +46,7 @@ module.exports.signUp = async function(username, email, password) {
 			.post('/signup', { username: username, email: email, password: password })
 			.then((res) => {
 				data = res.data
-				setToken(data.token)
+				setToken(res.data.data.token)
 			})
 		return data
 	} catch (err) {
@@ -57,7 +60,7 @@ module.exports.signIn = async function(username, password) {
 	try {
 		await axios.post('/signin', { username: username, password: password }).then((res) => {
 			data = res.data
-			setToken(data.token)
+			setToken(res.data.token)
 		})
 		return data
 	} catch (err) {
@@ -85,7 +88,7 @@ module.exports.getMyPosts = async function() {
 	let data
 	try {
 		await axios.get('/myposts').then((res) => {
-			data = res.data
+			data = res.data.data
 		})
 		return data
 	} catch (err) {
@@ -230,7 +233,7 @@ module.exports.getGoogleAccount = async function(code) {
 	let data
 	try {
 		await axios.post('/google-account', { code: code }).then((res) => {
-			data = res.data
+			data = res.data.data
 		})
 		return data
 	} catch (err) {

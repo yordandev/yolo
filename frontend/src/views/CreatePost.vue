@@ -17,7 +17,12 @@
 			<a-row type="flex" justify="center">
 				<a-col span="20">
 					<Error v-if="error" :error="error" />
-					<a-form-model ref="postForm" model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
+					<a-form-model
+						ref="postForm"
+						:model="form"
+						:label-col="labelCol"
+						:wrapper-col="wrapperCol"
+					>
 						<a-form-model-item label="Message" required
 							><a-input v-model="form.message" placeholder="Message" type="textarea" :rows="10"
 						/></a-form-model-item>
