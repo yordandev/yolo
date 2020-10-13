@@ -9,7 +9,6 @@ import { getGoogleAccount } from '../yolo-client'
 export default {
 	mounted: async function() {
 		localStorage.removeItem('access_token')
-		this.code = this.$route.query.code
 		let data
 		await getGoogleAccount(this.$route.query.code)
 			.then((res) => {
