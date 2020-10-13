@@ -6,17 +6,6 @@ const googleConfig = {
 	redirect: 'http://localhost:8081/callback', // this must match your google api settings
 }
 
-/**
- * Create the google auth object which gives us access to talk to google's apis.
- */
-function createConnection() {
-	return new google.auth.OAuth2(
-		googleConfig.clientId,
-		googleConfig.clientSecret,
-		googleConfig.redirect
-	)
-}
-
 const defaultScope = [
 	'https://www.googleapis.com/auth/userinfo.email',
 	'https://www.googleapis.com/auth/userinfo.profile',
@@ -26,6 +15,9 @@ const defaultScope = [
 /** HELPERS **/
 /*************/
 
+/**
+ * Create the google auth object which gives us access to talk to google's apis.
+ */
 function createConnection() {
 	return new google.auth.OAuth2(
 		googleConfig.clientId,
@@ -40,10 +32,6 @@ function getConnectionUrl(auth) {
 		prompt: 'consent',
 		scope: defaultScope,
 	})
-}
-
-function getGooglePeopleApi(auth) {
-	return google.people({ version: 'v1', auth })
 }
 
 /**********/
@@ -67,6 +55,6 @@ module.exports.getGoogleAccountFromCode = async function (code) {
 	const data = await auth.getToken(code)
 	const tokens = data.tokens
 	return {
-		id_token: tokens.id_token
+		id_token: tokens.id_token,
 	}
 }

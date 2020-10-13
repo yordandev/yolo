@@ -20,6 +20,7 @@ const JWT_SECRET =
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
 db.query = function (sql, params) {
+	//this is the sqlite context and is saved in a varible so we can use it inside the promise object
 	const that = this
 	return new Promise(function (resolve, reject) {
 		that.all(sql, params, function (error, rows) {
@@ -49,7 +50,7 @@ app.use(
 app.use(
 	cors({
 		origin: 'http://localhost:8081',
-		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204 no content
 	})
 )
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
@@ -83,7 +84,8 @@ const authenticateToken = (req, res, next) => {
 		if (err) {
 			return handleResponse(req, res, 401, { error: 'You need to be authenticated!' })
 		}
-		const sql = 'select * from user where id = ?'
+		const sql = 'SELECT * FROM user WHERE id = ?'
+		//User.id comes from decoding the token
 		const params = [user.id]
 		const userPointsSql = 'SELECT life_points FROM user WHERE id = ?'
 		const deleteUserSql = 'DELETE FROM user WHERE id = ?'
@@ -91,13 +93,13 @@ const authenticateToken = (req, res, next) => {
 		const userPoints = await db.query(userPointsSql, params)
 
 		if (!userPoints.rows.length) {
-			handleResponse(req, res, 401, { error: 'Token invalid!' })
+			handleResponse(req, res, 401, { error: 'User with this ID does not exist!' })
 			return
 		}
 		if (userPoints.rows[0].life_points <= 0) {
 			await db.query(insertIntoBlacklistSql, user.email)
 			await db.query(deleteUserSql, params)
-			handleResponse(req, res, 204, {
+			handleResponse(req, res, 200, {
 				message:
 					'Your account, your posts and your votes were deleted because you hit 0 life points.',
 			})
@@ -106,7 +108,7 @@ const authenticateToken = (req, res, next) => {
 
 		db.get(sql, params, (err, row) => {
 			if (err) {
-				handleResponse(req, res, 204, { error: err.message })
+				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
 			delete row.password
@@ -179,11 +181,10 @@ app.post('/signup', async (req, res, next) => {
 		delete data.password
 		const token = generateAccessToken({
 			id: data.id,
-			username: data.username,
 			email: data.email,
 		})
 		data.token = token
-		handleResponse(req, res, 200, {
+		handleResponse(req, res, 201, {
 			data: data,
 		})
 	})
@@ -231,7 +232,6 @@ app.post('/signin', async (req, res, next) => {
 		delete userData.date_created
 		const token = generateAccessToken({
 			id: userData.id,
-			username: userData.username,
 			email: userData.email,
 		})
 		userData.token = token
@@ -255,18 +255,6 @@ app.get('/me', authenticateToken, async (req, res, next) => {
 	}
 })
 
-app.get('/myposts', authenticateToken, async (req, res, next) => {
-	const sql = 'SELECT * FROM post WHERE authorId = ? ORDER BY date_created DESC'
-	const params = [req.user.id]
-
-	try {
-		const postsData = await db.query(sql, params)
-		handleResponse(req, res, 200, { data: postsData.rows })
-	} catch (error) {
-		handleResponse(req, res, 400, { error: error.message })
-	}
-})
-
 app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 	if (!req.params.id) {
 		handleResponse(req, res, 400, { error: 'No user ID provided.' })
@@ -277,7 +265,7 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 		req.body.password = req.body.data.password[0]
 	}
 	if (!req.body.username && !req.body.password) {
-		handleResponse(req, res, 400, { error: 'Nothing to update' })
+		handleResponse(req, res, 400, { error: 'No username and password specified' })
 		return
 	}
 
@@ -293,7 +281,7 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 
 	//Prevent user from updating other user's details
 	if (Number(req.params.id) !== req.user.id) {
-		handleResponse(req, res, 403, { message: 'You can only update your own details.' })
+		handleResponse(req, res, 403, { error: 'You can only update your own details.' })
 		return
 	}
 	db.run(sql, params, function (err, result) {
@@ -314,7 +302,7 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 app.delete('/users/:id', authenticateToken, (req, res, next) => {
 	const sql = `DELETE FROM user WHERE id = ?`
 	if (Number(req.params.id) !== req.user.id) {
-		handleResponse(req, res, 403, { message: 'You can only delete your own account.' })
+		handleResponse(req, res, 403, { error: 'You can only delete your own account.' })
 		return
 	}
 	db.run(sql, req.params.id, function (err, result) {
@@ -322,7 +310,7 @@ app.delete('/users/:id', authenticateToken, (req, res, next) => {
 			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
-		handleResponse(req, res, 200, { message: 'Success' })
+		handleResponse(req, res, 204)
 	})
 })
 
@@ -366,23 +354,26 @@ app.post('/google-account', async (req, res, next) => {
 		if (err) {
 			if (err.message === 'SQLITE_CONSTRAINT: UNIQUE constraint failed: user.email') {
 				const sql = 'SELECT username, id, life_points FROM user WHERE email = ?'
-				const username = await db.query(sql, data.email)
+				const user = await db.query(sql, data.email)
 				const existingData = {
-					id: username.rows[0].id,
-					username: username.rows[0].username,
+					id: user.rows[0].id,
+					username: user.rows[0].username,
 					email: data.email,
-					life_points: username.rows[0].life_points,
+					life_points: user.rows[0].life_points,
 				}
 				if (existingData.life_points <= 0) {
 					await db.query(deleteUserSql, existingData.id)
 					await db.query(insertIntoBlacklistSql, existingData.email)
-					handleResponse(req, res, 400, {
+					handleResponse(req, res, 200, {
 						error:
 							'Your account, your posts and your votes were deleted because you hit 0 life points.',
 					})
 					return
 				}
-				const token = generateAccessToken(existingData)
+				const token = generateAccessToken({
+					id: user.rows[0].id,
+					email: data.email,
+				})
 				existingData.token = token
 				handleResponse(req, res, 200, { data: existingData })
 				return
@@ -400,25 +391,35 @@ app.post('/google-account', async (req, res, next) => {
 		delete data.password
 		const token = generateAccessToken({
 			id: data.id,
-			username: data.username,
 			email: data.email,
 		})
 		data.token = token
-		handleResponse(req, res, 200, { data: data })
+		handleResponse(req, res, 201, { data: data })
 	})
 })
 
 //POST ENDPOINTS
 app.get('/posts', authenticateToken, (req, res, next) => {
 	const sql = 'SELECT * FROM post ORDER BY date_created DESC'
-	const params = []
-	db.all(sql, params, (err, rows) => {
+	db.all(sql, (err, rows) => {
 		if (err) {
 			handleResponse(req, res, 400, { error: err.message })
 			return
 		}
 		handleResponse(req, res, 200, { data: rows })
 	})
+})
+
+app.get('/myposts', authenticateToken, async (req, res, next) => {
+	const sql = 'SELECT * FROM post WHERE authorId = ? ORDER BY date_created DESC'
+	const params = [req.user.id]
+
+	try {
+		const postsData = await db.query(sql, params)
+		handleResponse(req, res, 200, { data: postsData.rows })
+	} catch (error) {
+		handleResponse(req, res, 400, { error: error.message })
+	}
 })
 
 app.get('/posts/:id', authenticateToken, (req, res, next) => {
@@ -451,7 +452,6 @@ app.post('/posts', authenticateToken, (req, res, next) => {
 	}
 	let data = {
 		message: req.body.message,
-		username: req.user.username,
 	}
 	const sql = 'INSERT INTO post (message, authorId) VALUES (?,?)'
 	const params = [data.message, req.user.id]
@@ -461,7 +461,7 @@ app.post('/posts', authenticateToken, (req, res, next) => {
 			return
 		}
 		data.id = this.lastID
-		handleResponse(req, res, 200, { data: data })
+		handleResponse(req, res, 201, { data: data })
 	})
 })
 
@@ -470,7 +470,7 @@ app.patch('/posts/:id', authenticateToken, (req, res, next) => {
 		req.body.message = req.body.data.message[0]
 	}
 	if (!req.body.message) {
-		handleResponse(req, res, 400, { error: 'Nothing to update' })
+		handleResponse(req, res, 400, { error: 'No message specified' })
 		return
 	}
 	const data = {
@@ -516,7 +516,7 @@ app.delete('/posts/:id', authenticateToken, (req, res, next) => {
 			return
 		}
 		if (Number(req.user.id) !== Number(row.authorId)) {
-			handleResponse(req, res, 403, { message: 'You can only delete your own posts.' })
+			handleResponse(req, res, 403, { error: 'You can only delete your own posts.' })
 			return
 		}
 		db.run(deletePostSql, req.params.id, function (err, result) {
