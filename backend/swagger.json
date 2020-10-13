@@ -21,104 +21,114 @@
 		}
 	],
 	"schemes": ["http"],
-	"consumes": ["application/json", "application/x-www-form-urlencoded"],
-	"produces": ["application/json"],
+	"consumes": ["application/json", "application/xml", "application/x-www-form-urlencoded"],
+	"produces": ["application/json", "application/xml"],
 	"paths": {
 		"/signup": {
 			"post": {
 				"tags": ["User and Authentication"],
-				"description": "Adds new users to the database and checks that it follows the constraints from the database as well as checking if the email is blacklisted",
-				"produces": ["application/json"],
+				"description": "Creates a new user if the email provided is not blacklisted.",
 				"parameters": [
 					{
-						"name": "username",
-						"description": "Unique username for the account",
-						"required": "true",
 						"in": "body",
+						"name": "body",
+						"description": "User object that is stored to the database",
+						"required": "true",
 						"schema": {
-							"title": "username",
-							"type": "string",
+							"title": "body",
+							"type": "object",
 							"properties": {
 								"username": {
 									"type": "string",
 									"example": "antonia",
 									"description": "The username of the user"
-								}
-							}
-						}
-					},
-					{
-						"required": "true",
-						"in": "body",
-						"name": "email",
-						"description": "Unique email for the account",
-						"schema": {
-							"title": "email",
-							"type": "string",
-							"properties": {
+								},
 								"email": {
 									"type": "string",
-									"example": "email@email.com",
+									"example": "antonia@antonia.com",
 									"description": "The email of the user"
-								}
-							}
-						}
-					},
-					{
-						"name": "password",
-						"description": "The password to the account",
-						"required": "true",
-						"in": "body",
-						"schema": {
-							"title": "username",
-							"type": "string",
-							"properties": {
+								},
 								"password": {
 									"type": "string",
-									"example": "antonia123",
+									"example": "antonia1234",
 									"description": "The password of the user"
 								}
+							},
+							"xml": {
+								"name": "data"
 							}
 						}
 					}
 				],
 				"responses": {
-					"200": {
+					"201": {
 						"description": "Success, new user has been added to the database",
 						"schema": {
 							"title": "user",
 							"type": "object",
+							"xml": {
+								"name": "data"
+							},
 							"properties": {
 								"id": {
 									"type": "integer",
 									"format": "int64",
 									"example": 6,
-									"description": "The id of the user, primary key"
+									"description": "The id of the user, primary key",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"username": {
 									"type": "string",
 									"example": "antonia",
-									"description": "The username of the user"
+									"description": "The username of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"email": {
 									"type": "string",
 									"example": "email@email.com",
-									"description": "The email of the user"
+									"description": "The email of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"life_points": {
 									"type": "integer",
 									"format": "int64",
 									"example": 50,
-									"description": "The default life points of the user"
+									"description": "The  life points of the user",
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"token": {
+									"type": "string",
+									"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImVtYWlsIjoieW9yZDIyMjIyMzIyMjIyMjIyMjIyMjIyMjIyMjIyYW5AeW9yZGFuLmRldiIsImlhdCI6MTYwMjU5OTIzMSwiZXhwIjoxNjAyNjAyODMxfQ.yswfYgu5bsojpkmE7aZo1uwK71tFxH0eryDeg8dSPPc",
+									"description": "The JWT from the server",
+									"xml": {
+										"attribute": "true"
+									}
 								}
 							}
 						}
 					},
-					"403": {
-						"description": "Your email is blacklisted"
-					},
 					"400": {
-						"description": "Your email or username is already taken"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "Your email is blacklisted || Your email is already taken || Your username is already taken || SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -126,83 +136,103 @@
 		"/signin": {
 			"post": {
 				"tags": ["User and Authentication"],
-				"description": "Signs in the user",
-				"produces": ["application/json"],
+				"description": "Signs in the user.",
 				"parameters": [
 					{
-						"name": "username",
-						"description": "The username of the account",
-						"required": "true",
 						"in": "body",
+						"name": "body",
+						"description": "User object containing the username and password",
+						"required": "true",
 						"schema": {
-							"title": "username",
-							"type": "string",
+							"title": "body",
+							"type": "object",
 							"properties": {
 								"username": {
 									"type": "string",
 									"example": "antonia",
 									"description": "The username of the user"
-								}
-							}
-						}
-					},
-					{
-						"name": "password",
-						"description": "The password of the account",
-						"required": "true",
-						"in": "body",
-						"schema": {
-							"title": "password",
-							"type": "string",
-							"properties": {
+								},
 								"password": {
 									"type": "string",
-									"example": "antonia123",
+									"example": "antonia1234",
 									"description": "The password of the user"
 								}
+							},
+							"xml": {
+								"name": "data"
 							}
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "Success, user has been signed in",
+						"description": "User was authenticated successfully",
 						"schema": {
 							"title": "user",
 							"type": "object",
+							"xml": {
+								"name": "data"
+							},
 							"properties": {
 								"id": {
 									"type": "integer",
 									"format": "int64",
 									"example": 6,
-									"description": "The id of the user, primary key"
+									"description": "The id of the user, primary key",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"username": {
 									"type": "string",
 									"example": "antonia",
-									"description": "The username of the user"
+									"description": "The username of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"email": {
 									"type": "string",
 									"example": "email@email.com",
-									"description": "The email of the user"
+									"description": "The email of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"life_points": {
 									"type": "integer",
 									"format": "int64",
 									"example": 50,
-									"description": "The default life points of the user"
+									"description": "The life points of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"token": {
 									"type": "string",
-									"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ijk3YW56aWVyIiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWF0IjoxNjAxMzg4Mjk1LCJleHAiOjE2MDEzOTE4OTV9.XLxlRj-hJdWPFWUL1Dk_Hohr_ngBpaiZKk7HijOSe-k",
-									"description": "The default life points of the user"
+									"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImVtYWlsIjoieW9yZDIyMjIyMzIyMjIyMjIyMjIyMjIyMjIyMjIyYW5AeW9yZGFuLmRldiIsImlhdCI6MTYwMjU5OTIzMSwiZXhwIjoxNjAyNjAyODMxfQ.yswfYgu5bsojpkmE7aZo1uwK71tFxH0eryDeg8dSPPc",
+									"description": "The JWT from the server",
+									"xml": {
+										"attribute": "true"
+									}
 								}
 							}
 						}
 					},
 					"400": {
-						"description": "Invalid username/password or user does not exist!"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "Invalid username/password or user does not exist! || Your account, your posts and your votes were deleted because you hit 0 life points. || SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -210,128 +240,145 @@
 		"/me": {
 			"get": {
 				"tags": ["User and Authentication"],
-				"description": "Fetches user data",
-				"produces": ["application/json"],
-				"parameters": [
-					{
-						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
-						"schema": {
-							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
-						}
-					}
-				],
+				"description": "Signs in the user.",
 				"responses": {
 					"200": {
-						"description": "Success, user information has been fetched",
+						"description": "Fetches user data",
 						"schema": {
 							"title": "user",
 							"type": "object",
+							"xml": {
+								"name": "data"
+							},
 							"properties": {
 								"id": {
 									"type": "integer",
 									"format": "int64",
 									"example": 6,
-									"description": "The id of the user"
+									"description": "The id of the user, primary key",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"username": {
 									"type": "string",
 									"example": "antonia",
-									"description": "The username of the user"
+									"description": "The username of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"email": {
 									"type": "string",
 									"example": "email@email.com",
-									"description": "The email of the user"
+									"description": "The email of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"life_points": {
 									"type": "integer",
 									"format": "int64",
-									"example": 54,
-									"description": "The life points of the user"
+									"example": 50,
+									"description": "The life points of the user",
+									"xml": {
+										"attribute": "true"
+									}
 								}
 							}
 						}
 					},
 					"400": {
-						"description": "An error occurd"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/myposts": {
 			"get": {
-				"tags": ["User and Authentication"],
-				"description": "Fetches posts the user created",
-				"produces": ["application/json"],
-				"parameters": [
-					{
-						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
-						"schema": {
-							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
-						}
-					}
-				],
+				"tags": ["Posts"],
+				"description": "Fetches posts that the user created",
 				"responses": {
 					"200": {
-						"description": "Success, the user's posts has been fetched",
+						"description": "Array with the posts",
 						"schema": {
 							"title": "mypost",
-							"type": "object",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"format": "int64",
-									"example": 23,
-									"description": "The id of the post"
-								},
-								"message": {
-									"type": "string",
-
-									"example": "Hi! This is a message.",
-									"description": "The message of the post"
-								},
-								"points": {
-									"type": "integer",
-									"format": "int64",
-									"example": 12,
-									"description": "The points of the post"
-								},
-								"date_created": {
-									"type": "dateform",
-									"example": "2020-10-05 10:06:49",
-									"description": "The date the post was created"
-								},
-								"authorId": {
-									"type": "integer",
-									"format": "int64",
-									"example": 6,
-									"description": " Foreign key referencing the user id of the author"
+							"type": "array",
+							"xml": {
+								"name": "data"
+							},
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "integer",
+										"format": "int64",
+										"description": "The id of the post"
+									},
+									"message": {
+										"type": "string",
+										"description": "The message of the post"
+									},
+									"points": {
+										"type": "integer",
+										"format": "int64",
+										"description": "The points of the post"
+									},
+									"date_created": {
+										"type": "dateform",
+										"description": "The date the post was created"
+									},
+									"authorId": {
+										"type": "integer",
+										"format": "int64",
+										"description": " Foreign key referencing the user id of the author"
+									}
 								}
-							}
+							},
+							"example": [
+								{
+									"id": 21,
+									"message": "Hi! This is a message.",
+									"points": 12,
+									"date_created": "2020-10-05 10:06:49",
+									"authorId": 8
+								},
+								{
+									"id": 22,
+									"message": "Hi! This is another message.",
+									"points": 2,
+									"date_created": "2020-10-05 09:06:49",
+									"authorId": 3
+								}
+							]
 						}
 					},
 					"400": {
-						"description": "An error occurd"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -339,55 +386,40 @@
 		"/users/:id": {
 			"patch": {
 				"tags": ["User and Authentication"],
-				"description": "Updates user information",
-				"produces": ["application/json"],
+				"description": "Updates the user's information",
 				"parameters": [
 					{
-						"name": "username",
-						"description": "The new username of the user",
 						"in": "body",
+						"name": "body",
+						"description": "User object containing any changes to the username and/or password",
+						"required": "true",
 						"schema": {
-							"title": "username",
-							"type": "string",
+							"title": "body",
+							"type": "object",
 							"properties": {
 								"username": {
 									"type": "string",
-									"example": "antonia2",
-									"description": "The new username of the user"
-								}
-							}
-						}
-					},
-					{
-						"name": "password",
-						"description": "The new password of the user",
-						"in": "body",
-						"schema": {
-							"title": "password",
-							"type": "string",
-							"properties": {
+									"example": "antonia",
+									"description": "The changed username of the user"
+								},
 								"password": {
 									"type": "string",
-									"example": "antonia456",
-									"description": "The new password of the user"
+									"example": "antonia1234",
+									"description": "The changed password of the user"
 								}
+							},
+							"xml": {
+								"name": "data"
 							}
 						}
 					},
 					{
 						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
+						"description": "The ID of the user that is to be updated. By default, the ID is the ID of the user making the request ",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
@@ -399,29 +431,33 @@
 						"description": "You can only update your own details"
 					},
 					"400": {
-						"description": "No user ID provided/ Nothing to update/ Username taken"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "No user ID provided || No username and password specified || Username taken"
+								}
+							}
+						}
 					}
 				}
 			},
 			"delete": {
 				"tags": ["User and Authentication"],
 				"description": "Deletes the user",
-				"produces": ["application/json"],
 				"parameters": [
 					{
 						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
+						"description": "The ID of the user that is to be deleted. By default, the ID is the ID of the user making the request ",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
@@ -433,7 +469,139 @@
 						"description": "You can only delete your own account"
 					},
 					"400": {
-						"description": "An error occured"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/google-url": {
+			"get": {
+				"tags": ["User and Authentication"],
+				"description": "Uses the Google OAUTH2.0 client to generate a login URL for the Sign in with Google/Sign up with Google buttons.",
+				"responses": {
+					"200": {
+						"description": "The Google consent screen URL",
+						"schema": {
+							"title": "url",
+							"type": "string",
+							"example": "https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&response_type=code&client_id=974845574224-ck6jtidv4ftch9t7kqt5stt8b9bub0h8.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fcallback",
+							"xml": {
+								"name": "data"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/google-account": {
+			"post": {
+				"tags": ["User and Authentication"],
+				"description": "Signs up/Signs in the user with Google.",
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "Authorization code returned from Google",
+						"required": "true",
+						"schema": {
+							"title": "body",
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"example": "4/0AfDhmrhK5LChWsAWc8XFEPy2kehsyIdo2s1RTA79_Kc8lWqMguoCznXHYRvGTSYC-5io3w",
+									"description": "The authorization code returned from Google"
+								}
+							},
+							"xml": {
+								"name": "data"
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success, the user was signed up/signed in with Google || The user was deleted since they have 0 or less than 0 life points.",
+						"schema": {
+							"title": "user",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"id": {
+									"type": "integer",
+									"format": "int64",
+									"example": 6,
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"username": {
+									"type": "string",
+									"example": "antonia",
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"email": {
+									"type": "string",
+									"example": "email@email.com",
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"life_points": {
+									"type": "integer",
+									"format": "int64",
+									"example": 50,
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"token": {
+									"type": "string",
+									"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImVtYWlsIjoieW9yZDIyMjIyMzIyMjIyMjIyMjIyMjIyMjIyMjIyYW5AeW9yZGFuLmRldiIsImlhdCI6MTYwMjU5OTIzMSwiZXhwIjoxNjAyNjAyODMxfQ.yswfYgu5bsojpkmE7aZo1uwK71tFxH0eryDeg8dSPPc",
+									"xml": {
+										"attribute": "true"
+									}
+								},
+								"error": {
+									"type": "string",
+									"example": "Your account, your posts and your votes were deleted because you hit 0 life points.",
+									"xml": {
+										"attribute": "true"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "Google code not provided || Your email is blacklisted || Your username is already taken || SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -442,250 +610,308 @@
 			"get": {
 				"tags": ["Posts"],
 				"description": "Fetches all posts",
-				"produces": ["application/json"],
 				"responses": {
 					"200": {
-						"description": "Success, an array containing all posts was retrieved",
+						"description": "Success, an array containing all posts",
 						"schema": {
 							"title": "posts",
-							"type": "object",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"format": "int64",
-									"example": 23,
-									"description": "The id of the post"
-								},
-								"message": {
-									"type": "string",
-									"example": "Hi! This is a message.",
-									"description": "The message of the post"
-								},
-								"points": {
-									"type": "integer",
-									"format": "int64",
-									"example": 12,
-									"description": "The points of the post"
-								},
-								"date_created": {
-									"type": "dateform",
-									"example": "2020-10-05 10:06:49",
-									"description": "The date the post was created"
-								},
-								"authorId": {
-									"type": "integer",
-									"format": "int64",
-									"example": 8,
-									"description": " Foreign key referencing the user id of the author"
+							"type": "array",
+							"xml": {
+								"name": "data"
+							},
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "integer",
+										"format": "int64",
+										"description": "The id of the post"
+									},
+									"message": {
+										"type": "string",
+										"description": "The message of the post"
+									},
+									"points": {
+										"type": "integer",
+										"format": "int64",
+										"description": "The points of the post"
+									},
+									"date_created": {
+										"type": "dateform",
+										"description": "The date the post was created"
+									},
+									"authorId": {
+										"type": "integer",
+										"format": "int64",
+										"description": " Foreign key referencing the user id of the author"
+									}
 								}
-							}
+							},
+							"example": [
+								{
+									"id": 21,
+									"message": "Hi! This is a message.",
+									"points": 12,
+									"date_created": "2020-10-05 10:06:49",
+									"authorId": 8
+								},
+								{
+									"id": 22,
+									"message": "Hi! This is another message.",
+									"points": 2,
+									"date_created": "2020-10-05 09:06:49",
+									"authorId": 3
+								}
+							]
 						}
 					},
 					"400": {
-						"description": "An error occurd"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			},
 			"post": {
 				"tags": ["Posts"],
 				"description": "Creates a new post",
-				"produces": ["application/json"],
 				"parameters": [
 					{
-						"name": "message",
-						"description": "The message from the application",
 						"in": "body",
+						"name": "body",
+						"description": "The post object containing the message",
 						"required": "true",
 						"schema": {
-							"title": "message",
-							"type": "string",
+							"title": "body",
+							"type": "object",
 							"properties": {
 								"message": {
 									"type": "string",
-									"example": "Hi! This is a message.",
-									"description": "The message"
+									"example": "Example message",
+									"description": "The post message"
 								}
-							}
-						}
-					},
-					{
-						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
-						"schema": {
-							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
+							},
+							"xml": {
+								"name": "data"
 							}
 						}
 					}
 				],
 				"responses": {
-					"200": {
-						"description": "Success, a new post was created",
+					"201": {
+						"description": "The post fetched",
 						"schema": {
-							"title": "posts",
+							"title": "post",
 							"type": "object",
 							"properties": {
 								"id": {
 									"type": "integer",
 									"format": "int64",
-									"example": 26,
-									"description": "The id of the post"
+									"example": 6,
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"message": {
 									"type": "string",
-									"example": "Hi! This is a message.",
-									"description": "The message of the post"
+									"example": "The message of the post",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"points": {
 									"type": "integer",
 									"format": "int64",
 									"example": 0,
-									"description": "The points of the post"
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"date_created": {
 									"type": "dateform",
-									"example": "2020-10-05 10:06:49",
-									"description": "The date the post was created"
+									"example": "2020-10-05 09:06:49",
+									"xml": {
+										"attribute": "true"
+									}
 								},
 								"authorId": {
 									"type": "integer",
 									"format": "int64",
-									"example": 6,
-									"description": " Foreign key referencing the user id of the author"
+									"example": 8,
+									"xml": {
+										"attribute": "true"
+									}
 								}
 							}
 						}
 					},
 					"400": {
-						"description": "An error occurd"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
 		},
 		"/posts/:id": {
-			"patch": {
+			"get": {
 				"tags": ["Posts"],
-				"description": "Update a specific post",
-				"produces": ["application/json"],
+				"description": "Get a specific post",
 				"parameters": [
 					{
-						"name": "message",
-						"description": "The message from the application",
-						"in": "body",
-						"required": "true",
-						"schema": {
-							"title": "message",
-							"type": "string",
-							"properties": {
-								"message": {
-									"type": "string",
-									"example": "Hi! This is the updated message.",
-									"description": "The message"
-								}
-							}
-						}
-					},
-					{
 						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
+						"description": "The ID of the post that is to be fetched.",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "Success, the post was updated",
+						"description": "The post fetched",
 						"schema": {
-							"title": "posts",
+							"title": "post",
 							"type": "object",
 							"properties": {
-								"id": {
-									"type": "integer",
-									"format": "int64",
-									"example": 26,
-									"description": "The id of the post"
-								},
 								"message": {
 									"type": "string",
-									"example": "Hi! This is the new message.",
-									"description": "The message of the post"
-								},
-								"points": {
-									"type": "integer",
-									"format": "int64",
-									"example": 0,
-									"description": "The points of the post"
-								},
-								"date_created": {
-									"type": "dateform",
-									"example": "2020-10-05 10:06:49",
-									"description": "The date the post was created"
-								},
-								"authorId": {
-									"type": "integer",
-									"format": "int64",
-									"example": 6,
-									"description": " Foreign key referencing the user id of the author"
+									"example": "Example message"
 								}
 							}
 						}
 					},
 					"400": {
-						"description": "Nothing to update"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"tags": ["Posts"],
+				"description": "Update a specific post",
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "The post object containing the updated message",
+						"required": "true",
+						"schema": {
+							"title": "body",
+							"type": "object",
+							"properties": {
+								"message": {
+									"type": "string",
+									"example": "Example updated message",
+									"description": "The updated message"
+								}
+							},
+							"xml": {
+								"name": "data"
+							}
+						}
 					},
-					"403": {
-						"description": "You can only update your own posts"
+					{
+						"name": "id",
+						"description": "The ID of the post that is to be updated.",
+						"in": "path",
+						"schema": {
+							"title": "id",
+							"type": "integer"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success, the post's information was updated"
+					},
+					"400": {
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "No message specified || You can only update your own posts|| SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			},
 			"delete": {
 				"tags": ["Posts"],
-				"description": "Delete a specific post",
-				"produces": ["application/json"],
+				"description": "Deletes a specific post",
 				"parameters": [
 					{
 						"name": "id",
-						"description": "The id of the user making the request",
-						"in": "body",
+						"description": "The ID of the post that is to be deleted.",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
 				"responses": {
-					"200": {
+					"204": {
 						"description": "Success, the post has been deleted"
 					},
 					"403": {
 						"description": "You can only delete your own posts"
 					},
+					"404": {
+						"description": "Post not found"
+					},
 					"400": {
-						"description": "An error occured"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "SQLite Error Message"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -694,38 +920,14 @@
 			"get": {
 				"tags": ["Upvotes and downvotes"],
 				"description": "Upvote a post",
-				"produces": ["application/json"],
 				"parameters": [
 					{
-						"name": "user.id",
-						"description": "The id of the user making the request",
-						"in": "body",
-						"schema": {
-							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
-						}
-					},
-					{
 						"name": "id",
-						"description": "The id of the post the user wish to upvote",
-						"in": "body",
+						"description": "The ID of the post that is to be upvoted.",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 24,
-									"description": "The id of the post"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
@@ -734,7 +936,19 @@
 						"description": "Success, you have upvoted a post"
 					},
 					"400": {
-						"description": "You cannot vote for yourself/ You have already voted"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "You cannot vote for yourself || You have already voted || SQLite Error Message"
+								}
+							}
+						}
 					},
 					"404": {
 						"description": "Post not found"
@@ -746,38 +960,14 @@
 			"get": {
 				"tags": ["Upvotes and downvotes"],
 				"description": "Downvote a post",
-				"produces": ["application/json"],
 				"parameters": [
 					{
-						"name": "user.id",
-						"description": "The id of the user making the request",
-						"in": "body",
-						"schema": {
-							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 6,
-									"description": "The id of the user"
-								}
-							}
-						}
-					},
-					{
 						"name": "id",
-						"description": "The id of the post the user wish to upvote",
-						"in": "body",
+						"description": "The ID of the post that is to be downvoted.",
+						"in": "path",
 						"schema": {
 							"title": "id",
-							"type": "integer",
-							"properties": {
-								"id": {
-									"type": "integer",
-									"example": 24,
-									"description": "The id of the post"
-								}
-							}
+							"type": "integer"
 						}
 					}
 				],
@@ -786,7 +976,19 @@
 						"description": "Success, you have downvoted a post"
 					},
 					"400": {
-						"description": "You cannot vote for yourself/ You have already voted"
+						"description": "The error message",
+						"schema": {
+							"title": "error",
+							"type": "object",
+							"xml": {
+								"name": "data"
+							},
+							"properties": {
+								"error": {
+									"example": "You cannot vote for yourself || You have already voted || SQLite Error Message"
+								}
+							}
+						}
 					},
 					"404": {
 						"description": "Post not found"

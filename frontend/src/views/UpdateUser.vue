@@ -83,9 +83,9 @@ export default {
 		},
 		handleSubmit() {
 			updateMyProfile(this.form.username, this.form.password)
-				.then((res) => {
+				.then(() => {
 					this.$notification['success']({
-						message: res,
+						message: 'Success',
 					})
 					this.$router.push('/my-profile')
 				})

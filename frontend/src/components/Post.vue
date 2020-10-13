@@ -48,9 +48,9 @@ export default {
 	methods: {
 		upvote() {
 			upvotePost(this.post.id)
-				.then((res) => {
+				.then(() => {
 					this.$notification['success']({
-						message: res,
+						message: 'Upvoted!',
 					})
 					this.$emit('upvotePost', this.post.id)
 				})
@@ -62,9 +62,9 @@ export default {
 		},
 		downvote() {
 			downvotePost(this.post.id)
-				.then((res) => {
+				.then(() => {
 					this.$notification['success']({
-						message: res,
+						message: 'Downvoted!',
 					})
 					this.$emit('downvotePost', this.post.id)
 				})
@@ -76,9 +76,9 @@ export default {
 		},
 		deletePost() {
 			deletePost(this.post.id)
-				.then((res) => {
+				.then(() => {
 					this.$notification['success']({
-						message: res,
+						message: 'Deleted',
 					})
 					this.$emit('deletePost', this.post.id)
 				})

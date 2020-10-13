@@ -51,9 +51,9 @@ export default {
 	methods: {
 		handleSubmit() {
 			updatePost(this.$route.params.id, this.form.message)
-				.then((res) => {
+				.then(() => {
 					this.$notification['success']({
-						message: res,
+						message: 'Success',
 					})
 					this.$router.push('/my-posts')
 				})
