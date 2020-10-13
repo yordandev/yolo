@@ -295,7 +295,7 @@ app.patch('/users/:id', authenticateToken, async (req, res, next) => {
 			}
 			return
 		}
-		handleResponse(req, res, 200, { message: 'Success' })
+		handleResponse(req, res, 200)
 	})
 })
 
@@ -496,7 +496,7 @@ app.patch('/posts/:id', authenticateToken, (req, res, next) => {
 				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
-			handleResponse(req, res, 200, { message: 'Success' })
+			handleResponse(req, res, 200)
 		})
 	})
 })
@@ -524,7 +524,7 @@ app.delete('/posts/:id', authenticateToken, (req, res, next) => {
 				handleResponse(req, res, 400, { error: err.message })
 				return
 			}
-			handleResponse(req, res, 204, { message: 'Deleted' })
+			handleResponse(req, res, 204)
 		})
 	})
 })
@@ -562,7 +562,7 @@ app.get('/posts/upvote/:id', authenticateToken, async (req, res, next) => {
 		await db.query(voteSql, voteParams)
 		await db.query(upvoteSql, req.params.id)
 		await db.query(upvoteUserSql, authorId)
-		handleResponse(req, res, 200, { message: 'Upvoted!' })
+		handleResponse(req, res, 200)
 	} catch (error) {
 		handleResponse(req, res, 400, { error: error.message })
 	}
@@ -601,7 +601,7 @@ app.get('/posts/downvote/:id', authenticateToken, async (req, res, next) => {
 		await db.query(voteSql, voteParams)
 		await db.query(downvoteSql, req.params.id)
 		await db.query(downvoteUserSql, authorId)
-		handleResponse(req, res, 200, { message: 'Downvoted!' })
+		handleResponse(req, res, 200)
 	} catch (error) {
 		handleResponse(req, res, 400, { error: error.message })
 	}
